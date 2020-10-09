@@ -1,0 +1,335 @@
+:root {
+  font-size: 12pt;
+  font-family: 'Roboto Mono', monospace;
+  --text-primary: #b6b6b6;
+  --text-secondary: #ececec;
+  --bg-primary: #23232e;
+  --bg-secondary: #141418;
+}
+
+body{
+  margin: 0%;
+  padding: 0%;
+  /*background-color:#2B2B2B;*/
+  background-color: rgba(0, 0, 0, 0.876);
+}
+
+body::-webkit-scrollbar{
+  width: 0.25rem;
+}
+body::-webkit-scrollbar-track{
+  background-color: black;
+}
+body::-webkit-scrollbar-thumb{
+  background-color: #F55D3E;
+}
+
+
+@media print
+{
+.noprint {display:none;}
+}
+
+.mystyle{
+    font-family: 'Courier Prime', monospace;
+    background-color: salmon;
+    width: 50px;
+    height: 50px;
+    margin-left: 50%;
+    text-justify: inter-word;
+}
+
+#container{
+  margin-left: 0;
+  margin-right: 0;
+  display: -webkit-flex;
+}
+
+#banner{
+  width:100%;
+  height: 6%;
+  background-color:#111;
+  position: fixed;
+  display: flex;
+}
+#banner span{
+  font-size: 25px;
+  text-align: center;
+  padding-left: 20px;
+}
+#banner a{
+  text-decoration: none;
+  cursor: pointer;
+}
+button{
+  height: 2rem;
+  width: 6rem;
+  background-color: #111;
+  color: #fff;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  margin-left: 3px;
+  margin-right: 10px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 12px;
+}
+button:hover{
+  background-color: #1ed760;
+  color: #111;
+}
+/*Containers inside the banner*/
+#scripts{
+  display: flex;
+  width: 15rem;
+  justify-content: space-between;
+  align-items: center;
+}
+#colapse-icon{
+  padding-left: 10px;
+  font-size: 30px;
+  color:#F55D3E ; 
+}
+#times-icon{
+  padding-right: 10px;
+  font-size: 40px;
+  color: #111;
+}
+#script-sidebar{
+  color: #fff;
+  text-decoration: none;
+}
+
+#title{
+  flex: 2;
+  text-align: center;
+  flex: 2;
+}
+#title a{
+  font-size: 15px;
+  padding-left: 10px;
+}
+#script-title{
+  font-family: 'Roboto Mono', monospace ;
+  font-size: 15px;
+  color: white;
+}
+
+
+#btns{
+  display: flex;
+  justify-content: flex-end;
+  width: 20%;
+  flex: 1;
+}
+
+#mySidebar{
+  width: 0;
+  height: 100vh;
+  margin-left: 0;
+  margin-top: 2.80%;
+  background-color: #111;
+  position: fixed;
+  transition: width 300ms ease;
+}
+
+#mySidebar a {
+  text-decoration: none;
+  color: #818181;
+  transition: 0.3s;
+}
+
+#mySidebar a:hover {
+  color: #f1f1f1;
+}
+
+#mySidebar ul{
+  margin-left: 0%;
+  padding-left: 0%;
+}
+
+#mySidebar li{
+  font-size: 18px;
+  color: white;
+  text-align: center;
+  width: 100%;
+  height: 3rem;
+  margin-left: 0%;
+  overflow: hidden;
+  list-style-type: none;
+  cursor: pointer;
+}
+
+#mySidebar li:hover {
+  color: black;
+  background-color:#F55D3E ;
+}
+
+#content{
+  /*box-shadow: rgb(130, 130, 130) 0px 5px 4px 1px;*/
+    hyphens: none;
+    display: block;
+    position: relative;
+    z-index: 1;
+    user-select: inherit;
+    margin-top: 70px;
+    margin-bottom: 0px;
+    background-color: rgb(255, 255, 255);
+    font-family: "Courier Prime", Courier, monospace;
+    overflow-wrap: break-word;
+    transform-origin: 50% 0px 0px;
+    color: rgb(0, 0, 0);
+    transform: scale(1);
+    margin-right: auto !important;
+    margin-left: auto !important;
+    height: 95% !important;
+    width: 586px !important;
+    overflow: hidden;
+    padding: 96px 91px 25% 139px !important;
+}
+
+/*Toolvbar style*/
+#toolbar{
+  font-family:'Roboto Mono', monospace ;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 2rem;
+  height: 40%;
+  position: fixed;
+  padding-bottom: 10px;
+  margin-top: 15%;
+  margin-left: 81%;
+  cursor: pointer;
+  background-color:#111;
+}
+#toolbar div{
+  text-align: center;
+  margin-top: 20px;
+  width: 100%;
+}
+#toolbar div:hover{
+  background-color: #F55D3E;
+  color: #111;
+}
+#toolbar a{
+  text-align: center;
+  color: #F55D3E;
+  margin-top: 20px;
+  width: 100px;
+}
+#toolbar a:hover{
+  color: #111;
+  background-color: #F55D3E;
+}
+.tool .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #F55D3E;
+  color: #111;
+  text-align: left;
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  /*margin-left: -60px;*/
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tool:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+
+/*Script elements styles*/
+.character{
+    font-family: 'Courier Prime', monospace;
+    text-transform: uppercase;
+    /*background-color: rgb(248, 76, 57);*/
+    width: 30%;
+    margin-top: 10px;
+    margin-left: 30%;
+    text-justify: inter-word;
+}
+.character:empty::before{
+  content:attr(data-placeholder);
+  color:gray
+}
+
+.dialog{
+    font-family: 'Courier Prime', monospace;
+    /*background-color: rgb(250, 128, 189);*/
+    width: 60%;
+    margin-left: 20%;
+    margin-right: 20%;
+    text-justify: inter-word;
+}
+.dialog:empty::before{
+  content:attr(data-placeholder);
+  color:gray
+}
+.location{
+    font-family: 'Courier Prime', monospace;
+    text-transform: uppercase;
+    background-color: rgb(211, 211, 211);
+    width: 100%;
+    margin-top: 10px;
+}
+.location:empty::before{
+  content:attr(data-placeholder);
+  color:gray
+}
+.text{
+    font-family: 'Courier Prime', monospace;
+    /*background-color: rgb(248, 232, 85);*/
+    width: 100%;
+    margin-top: 10px;
+}
+.text:empty::before{
+  content:attr(data-placeholder);
+  color:gray
+}
+.transition{
+    font-family:'Courier Prime', monospace ;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-align: right;
+    /*background-color: lightslategray;*/
+    margin-top: 10px;
+    width: 100%;
+}
+.transition:empty::before{
+  content:attr(data-placeholder);
+  color:gray
+}
+
+#credit{
+  font-size: 15px;
+  margin-left: 70%;
+  margin-top: 30%;
+  position: fixed;
+}
+
+#add-script{
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  height: 80vh;
+  padding: 20px 0 10px 0;
+  background-color: #141418;
+  color: white;
+  font-family:'Roboto Mono', monospace;
+  font-size: 18px;
+}
+
+#add-script input{
+  margin-top: 2rem;
+}

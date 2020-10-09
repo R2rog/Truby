@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="../style/style.css">
+    <title >Add script</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+</head>
+<body>
+    <form id="add-script">
+        <div>
+            <label>Enter the new script</label>
+            <br>
+            <input type="text" id="title" autofocus>
+        </div>
+        <button type="submit" id="newDoc">Add</button>
+    </form>
+    <script>
+        const electron = require('electron');
+        const { ipcRenderer } = require('electron');
+        let form = document.querySelector('form');
+
+        form.addEventListener('submit', e =>{
+            e.preventDefault();
+            let title = document.getElementById('title').value + '.json';
+            ipcRenderer.send('newDoc', title);
+        });
+
+        ipcRenderer.on('newDoc',(e,arg)=>{
+            alert(arg);
+            window.close();
+        });
+    </script>
+</body>
+</html>
