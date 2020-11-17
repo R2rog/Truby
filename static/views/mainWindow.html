@@ -32,6 +32,9 @@
     <div id="mySidebar" class="noprint"><!--Contains the titles of the store-->
       <ul id="titles" class="noprint">
       </ul>
+      <ul>
+        <li><a href="javascript:void(0)" class="noprint" onclick="addDoc()" id=plus-icon">&plus;Add script</a></li>
+      </ul>
     </div>
     <div id="content" contenteditable="true"> </div>
     <div id="toolbar" class="noprint">
@@ -49,6 +52,9 @@
       </div>
       <div class="tool">
         <a onclick="newElement('transition')">T</a><span class="tooltiptext">ransition</span>
+      </div>
+      <div class="tool">
+        <a onclick="changeClass()">-></a><span class="tooltiptext">   Shift element</span>
       </div>
     </div>
   </div>

@@ -26,16 +26,30 @@ app.on('ready', function(){
         protocol: 'file',
         slashes: true
     }));
-    //Quit app when closed
-    mainWindow.on('closed', function(){
-        app.quit();
+    //Saving before quiting the app if there are unsaved changes
+    mainWindow.on('close', (e)=>{
+        if (contentToSave.content==1) {
+            saveDoc();
+            e.preventDefault();
+        } else {
+            app.quit();   
+        }
     });
+
+    //Quiting the app after the window was closed.
+    mainWindow.on('closed',(e)=>{
+        app.quit();
+    })
 
     //Build menu from the template
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     //Insert menu
     Menu.setApplicationMenu(mainMenu);
 });
+
+module.exports = function(window){
+    return Menu.buildFromTemplate
+}
 
 //Handle create add window
 function createAddWindow(){
@@ -60,27 +74,28 @@ function createAddWindow(){
 
 }
 
-//Adding a new file
-ipcMain.on('newDoc', (e,title)=>{
-    filepath = './data/' + title;
-    fs.writeFile(filepath,'{"script": "Hello World","dialogs":[],"characters":[],"locations":[],"counter":0}',(err) => { 
-        if (err){
-            e.sender.send('newDoc',err);
-        }
-        else {
-            e.sender.send('newDoc',"File written successfully");
-            mainWindow.webContents.send('show-new-item');
-        } 
-      }); 
-});
+function saveDoc(){
+    mainWindow.webContents.send('request-elements','saving file ...');
+    ipcMain.on('send-elements',(e,content)=>{
+        if (contentToSave.content ==1) {
+            elements = content.elements;
+            fileDir = content.fileDir;
+            numberOfElements = content.numberOfElements;
+            let screenplay = require(fileDir);
+            screenplay.dialogs = elements;
+            screenplay.counter = numberOfElements;
+            console.log(screenplay);
+            screenplay = JSON.stringify(screenplay);
+            fs.writeFile(fileDir,screenplay, (err)=>{
+                if(err) throw err;
+                else mainWindow.webContents.send('Saved','File saved');
+                contentToSave.content = 0;
+            });
+        }else {
+            mainWindow.webContents.send('Saved','No changes detected');
+        };
 
-//Saving changes to the document
-ipcMain.on('unsaved-changes', (e,content)=>{
-    contentToSave = content;
-});
-
-module.exports = function(window){
-    return Menu.buildFromTemplate
+    });
 }
 
 //Create a new document template
@@ -105,6 +120,30 @@ function createDocument(){
             addWindow = null;
         });
 }
+
+//Adding a new file from the main window
+ipcMain.on('addDoc',(e,args)=>{
+    createAddWindow();
+})
+
+//Adding a new file from the addWindow
+ipcMain.on('newDoc', (e,title)=>{
+    filepath = './data/' + title;
+    fs.writeFile(filepath,'{"script": "Hello World","dialogs":[],"characters":[],"locations":[],"counter":0}',(err) => { 
+        if (err){
+            e.sender.send('newDoc',err);
+        }
+        else {
+            e.sender.send('newDoc',"File written successfully");
+            mainWindow.webContents.send('show-new-item');
+        } 
+      }); 
+});
+
+//Saving changes to the document
+ipcMain.on('unsaved-changes', (e,content)=>{
+    contentToSave = content;
+});
 
 //Menu template
 const mainMenuTemplate = [
@@ -142,27 +181,7 @@ const mainMenuTemplate = [
                 label : 'Save Doc',
                 accelerator: process.platform == 'darwin' ? 'Command+S': 'Ctrl+S',
                 click(){
-                    mainWindow.webContents.send('request-elements','saving file ...');
-                    ipcMain.on('send-elements',(e,content)=>{
-                        if (contentToSave.content ==1) {
-                            elements = content.elements;
-                            fileDir = content.fileDir;
-                            numberOfElements = content.numberOfElements;
-                            let screenplay = require(fileDir);
-                            screenplay.dialogs = elements;
-                            screenplay.counter = numberOfElements;
-                            console.log(screenplay);
-                            screenplay = JSON.stringify(screenplay);
-                            fs.writeFile(fileDir,screenplay, (err)=>{
-                                if(err) throw err;
-                                else mainWindow.webContents.send('Saved','File saved');
-                                contentToSave.content = 0;
-                            });
-                        }else {
-                            mainWindow.webContents.send('Saved','No changes detected');
-                        };
-
-                    });
+                    saveDoc();
                 }
             }
         ]
@@ -172,7 +191,7 @@ const mainMenuTemplate = [
         submenu:[
             {
                 label:'Character',
-                accelerator: process.platform == 'darwin' ? 'Command+C': 'Alt+C',
+                accelerator: process.platform == 'darwin' ? 'Command+S': 'Alt+S',
                 click(){
                     mainWindow.webContents.send('character','Add Character');
                 }
@@ -200,9 +219,16 @@ const mainMenuTemplate = [
             },
             {
                 label: 'Location',
-                accelerator: process.platform == 'darwin' ? 'Command+Q': 'Alt+Q',
+                accelerator: process.platform == 'darwin' ? 'Command+W': 'Alt+W',
                 click(){
                     mainWindow.webContents.send('location','Add location');
+                }
+            },
+            {
+                label:'Shift Action',
+                accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Alt+Q',
+                click(){
+                    mainWindow.webContents.send('changeAction','Change Action');
                 }
             },
         ]

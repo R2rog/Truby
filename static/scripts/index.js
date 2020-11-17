@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const { ipcRenderer } = require('electron');
 const { title, defaultApp } = require('process');
+const { default: EditorJS } = require('@editorjs/editorjs');
+const { dialog } = require('electron')
 
 // Global variables
 const content = document.getElementById('content');
@@ -11,6 +13,8 @@ let filenames= fs.readdirSync(directory);
 let filename = '';
 let currentIndex = 0; //Gives the position of the selected element on the NodeList
 let counter = 0;//Guves a unique key to every new element added
+let classes = ['text','character','dialog','location','transition'];
+let unsavedChanges = 0;
 
 
 function openNav() {
@@ -28,12 +32,15 @@ function closeNav() {
 
 //Function that detects un-saved changes. 
 document.getElementById('content').onkeyup = e => { // alerting system that files have been updated
-    if(!document.getElementById('script-title').innerText.endsWith("*")){ 
+    unsavedChanges = 1;
+    if(!document.getElementById('script-title').innerText.endsWith("*")&&unsavedChanges==1){ 
         document.getElementById('script-title').innerText += ' *' // add asterisk when starting to edit, BUT only once
-    }; 
-    ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
-        content: 1
-    })
+        ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
+            content: 1
+        })
+    }else{
+        unsavedChanges;
+    }
 }
 //Function that gets the id of the current element.
 function currentElemIndex(id){
@@ -115,6 +122,22 @@ function displayContent(el, filepath, filename){
     });
 };
 
+//Function that shifts through the different classes for the selected element
+function changeClass(){ 
+    let el = content.childNodes[currentIndex];
+    let currentClass = el.className;
+    console.log('Current class of the element',currentClass);
+    let i = classes.indexOf(currentClass);
+    if (i +1 >= classes.length) i = -1;
+    el.setAttribute('class',classes[i + 1]);
+    console.log('New class of the element', el.className);
+};
+
+//Adding a new file from the main window
+function addDoc(){
+    ipcRenderer.send("addDoc","Adding new doc");
+};
+
 //Macro Key Bindings
 ipcRenderer.on('character',(e,args)=>{
     newElement('character');
@@ -134,6 +157,10 @@ ipcRenderer.on('text',(e,args)=>{
 
 ipcRenderer.on('transition',(e,args)=>{
     newElement('transition');
+});
+
+ipcRenderer.on('changeAction',(e,args)=>{
+    changeClass();
 });
 
 ipcRenderer.on('request-elements',(e,args)=>{
@@ -161,7 +188,8 @@ ipcRenderer.on('Saved',(e,args)=>{
     }, 1000);*/
     window.confirm(args);
     let scriptTitle = document.getElementById('script-title');
-    scriptTitle.innerText =scriptTitle.slice(0,-1) // remove asterisk from title
+    unsavedChanges = 0;
+    //scriptTitle.innerText =scriptTitle.slice(0,-1)  remove asterisk from title
 });
 
 ipcRenderer.on('quit',(e,args) =>{
@@ -175,5 +203,27 @@ ipcRenderer.on('show-new-item',(e,args)=>{
 document.getElementById('print').addEventListener('click',(e)=>{
     window.print();
 });
+/*
+window.addEventListener('beforeunload',()=>{
+    console.log(unsavedChanges);
+    if (unsavedChanges == 1) {
+        return 'Unsaved changes'
+    } else {
+        window.close();
+    }
+});
+window.addEventListener('beforeunload',(e)=>{
+    if (unsavedChanges == 1) {
+        e.preventDefault();
+        dialog.showMessageBox(mainWindow, {
+            title: 'Application is not responding',
+            buttons: ['Dismiss'],
+            type: 'warning',
+            message: 'Application is not responding…',
+           });
+    } else {
+        window.close();
+    }
+});*/
 
 displayTitles(filenames);

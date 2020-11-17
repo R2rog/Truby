@@ -136,13 +136,14 @@ button:hover{
 }
 
 #mySidebar a {
+  padding-left: 10px;
+  font-size: 20px;
+  color: white;
   text-decoration: none;
-  color: #818181;
-  transition: 0.3s;
 }
 
 #mySidebar a:hover {
-  color: #f1f1f1;
+  color: black;
 }
 
 #mySidebar ul{
@@ -165,6 +166,12 @@ button:hover{
 #mySidebar li:hover {
   color: black;
   background-color:#F55D3E ;
+}
+
+#plus-icon{
+  padding-left: 10px;
+  font-size: 40px;
+  color: #111;
 }
 
 #content{
