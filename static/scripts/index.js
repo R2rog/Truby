@@ -1,16 +1,16 @@
 //Importing modules.
 const fs = require('fs');
-const path = require('path');
+//const path = require('path');
 const { ipcRenderer } = require('electron');
-const { title, defaultApp } = require('process');
-const { default: EditorJS } = require('@editorjs/editorjs');
+//const { title, defaultApp } = require('process');
+//const { default: EditorJS } = require('@editorjs/editorjs');
 const { dialog } = require('electron')
 
 // Global variables
 const content = document.getElementById('content');
 let directory = './data';
 let filenames= fs.readdirSync(directory);
-let filename = '';
+let script ='';
 let currentIndex = 0; //Gives the position of the selected element on the NodeList
 let counter = 0;//Guves a unique key to every new element added
 let classes = ['text','character','dialog','location','transition'];
@@ -31,16 +31,13 @@ function closeNav() {
 }
 
 //Function that detects un-saved changes. 
-document.getElementById('content').onkeyup = e => { // alerting system that files have been updated
+document.getElementById('content').onclick = e => { // alerting system that files have been updated
     unsavedChanges = 1;
-    if(!document.getElementById('script-title').innerText.endsWith("*")&&unsavedChanges==1){ 
-        document.getElementById('script-title').innerText += ' *' // add asterisk when starting to edit, BUT only once
-        ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
-            content: 1
-        })
-    }else{
-        unsavedChanges;
-    }
+    ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
+        content: 1
+    })
+    let title = document.getElementById(script);
+    title.style.color = "red";
 }
 //Function that gets the id of the current element.
 function currentElemIndex(id){
@@ -58,12 +55,13 @@ function insertElement(newElement,newBr){
         //content.innerHTML += '<br>';
     }else{
         //nodes.splice(currentIndex+2,0,newElement,newBr);
-        nodes.splice(currentIndex+2,0,newElement);
+        nodes.splice(currentIndex+1,0,newElement);
         renderElements(nodes,newElement);
     }
     if (currentIndex != 0) {
-        currentIndex += currentIndex +2;
+        currentIndex += currentIndex +1;
     }
+    //document.getElementById(currentIndex).focus();
     console.log('Nodes post-copy: ',nodes);
 };
 
@@ -73,7 +71,7 @@ function renderElements(arr,newElement){
     arr.forEach(dialog => {
         content.innerHTML += dialog.outerHTML; 
     });
-    newElement.style('border-color','black');//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //newElement.style('border-color','black');//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 //Function that creates a character html tag
@@ -86,6 +84,7 @@ function newElement(type){
     let newBr = document.createElement("BR");
     newElement.setAttribute('class',type);
     newElement.setAttribute('id',id);
+    newElement.setAttribute('tabindex',0);
     newElement.setAttribute('data-placeholder',type)
     newElement.setAttribute('contentEditable','true');
     newElement.setAttribute("onclick", getId);
@@ -97,6 +96,7 @@ function displayTitles(filenames){
         el = document.createElement("li");
         //el.setAttribute('class','li-title');
         filename = `${file.split('.json')[0]}`;
+        el.setAttribute('id',filename)
         text = document.createTextNode(filename);
         el.appendChild(text);
         filepath = '../../data/' + filename + '.json';
@@ -108,6 +108,7 @@ function displayTitles(filenames){
 function displayContent(el, filepath, filename){
     el.addEventListener('click',(e)=>{
             let file = require(filepath);
+            script = el.innerHTML;
             //Reseting the values for a new file.
             counter = 0;
             currentIndex = 0;
@@ -119,6 +120,7 @@ function displayContent(el, filepath, filename){
             counter = file.counter;
             currentIndex = file.dialogs.length-2;
             console.log('JSON counter: ',counter,' JSON currentIndex: ',currentIndex);
+            console.log('Selected script: ',script);
     });
 };
 
@@ -171,25 +173,16 @@ ipcRenderer.on('request-elements',(e,args)=>{
     });
     ipcRenderer.send('send-elements',{
         elements: dialogs,
-        fileDir: './data/' + filename + '.json',
+        fileDir: './data/' + script + '.json',
         numberOfElements: counter
     });
 });
 
 ipcRenderer.on('Saved',(e,args)=>{
-    /*el = document.createElement("p");
-    text = document.createTextNode(args);
-    el.appendChild(text)
-    el.setAttribute("id", "flash");
-    document.querySelector('body').prepend(el)
-    setTimeout(function() { // remove notification after 1 second
-    document.querySelector('body').removeChild(el);
-    document.title = document.title.slice(0,-1) // remove asterisk from title
-    }, 1000);*/
-    window.confirm(args);
-    let scriptTitle = document.getElementById('script-title');
+    //window.confirm(args);
+    let title = document.getElementById(script);
+    title.style.color = '#1ed760';
     unsavedChanges = 0;
-    //scriptTitle.innerText =scriptTitle.slice(0,-1)  remove asterisk from title
 });
 
 ipcRenderer.on('quit',(e,args) =>{

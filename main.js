@@ -76,7 +76,9 @@ function createAddWindow(){
 
 function saveDoc(){
     mainWindow.webContents.send('request-elements','saving file ...');
+    console.log(contentToSave.content);
     ipcMain.on('send-elements',(e,content)=>{
+        console.log(content.fileDir);
         if (contentToSave.content ==1) {
             elements = content.elements;
             fileDir = content.fileDir;
@@ -92,7 +94,7 @@ function saveDoc(){
                 contentToSave.content = 0;
             });
         }else {
-            mainWindow.webContents.send('Saved','No changes detected');
+            console.log('no changes detected');
         };
 
     });

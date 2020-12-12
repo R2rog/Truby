@@ -63,15 +63,15 @@ body::-webkit-scrollbar-thumb{
 }
 button{
   height: 2rem;
-  width: 6rem;
+  width: 10rem;
   background-color: #111;
   color: #fff;
   font-family: 'Roboto Mono', monospace;
   font-size: 16px;
   text-align: center;
   text-decoration: none;
-  margin-left: 3px;
-  margin-right: 10px;
+  margin-left: 10px;
+  margin-right: 1px;
   margin-top: 5px;
   border: none;
   border-radius: 12px;
