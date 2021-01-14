@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="../style/style.css">
+  <script src="https://use.fontawesome.com/6cd9a4fb2b.js"></script>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css">
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet"> <!--Google fonts API-->
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
@@ -36,8 +38,9 @@
         <li><a href="javascript:void(0)" class="noprint" onclick="addDoc()" id=plus-icon">&plus;Add script</a></li>
       </ul>
     </div>
+    <img id="img-placeholder" src="../images/img-placeholder.png" alt="Placeholder">
     <div id="content" contenteditable="true"> </div>
-    <div id="toolbar" class="noprint">
+    <div id="toolbar"  class="noprint">
       <div class="tool" onclick="newElement('text')">
         <a >A</a><span class="tooltiptext">ction</span>
       </div>
@@ -54,7 +57,7 @@
         <a >T</a><span class="tooltiptext">ransition</span>
       </div>
       <div class="tool" onclick="changeClass()">
-        <a >-></a><span class="tooltiptext">   Shift element</span>
+        <a >-></a><span class="tooltiptext">Shift element</span>
       </div>
     </div>
   </div>

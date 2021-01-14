@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="../style/style.css">
+    <title >Change the name of the script</title>
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+</head>
+<body>
+    <form id="add-script">
+        <div>
+            <label>Enter the new name of script</label>
+            <br>
+            <input type="text" id="title" autofocus>
+        </div>
+        <button type="submit" id="changeName">Change</button>
+    </form>
+    <script>
+        const electron = require('electron');
+        const { ipcRenderer } = require('electron');
+        let form = document.querySelector('form');
+
+        form.addEventListener('submit', e =>{
+            e.preventDefault();
+            let newTitle = document.getElementById('title').value + '.json';
+            ipcRenderer.send('name-changed', newTitle);
+        });
+        ipcRenderer.on('name-changed',(e,args)=>{
+            alert(args);
+            window.close();
+        });
+    </script>
+</body>
+</html>

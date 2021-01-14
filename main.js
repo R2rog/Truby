@@ -10,7 +10,7 @@ let mainWindow;
 let addWindow;
 let contentToSave = 0;
 let currentFile = '';
-
+let selectedScripts = 0;
 //Listen for the app to be ready
 app.on('ready', function(){
     mainWindow = new BrowserWindow({
@@ -71,16 +71,36 @@ function createAddWindow(){
     addWindow.on('close',function(){
         addWindow = null;
     });
+}
 
+function changeNameWindow(){
+    addWindow = new BrowserWindow({
+        width: 300,
+        height: 200,
+        title: 'Type the new name for the script',
+        webPreferences:{
+            nodeIntegration: true
+        }
+    });
+    //Load main HTML page
+    addWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'static/views/editWindow.html'),
+        protocol: 'file',
+        slashes: true,
+    }));
+    //Garbage collection
+    addWindow.on('close',function(){
+        addWindow = null;
+    });
 }
 
 function saveDoc(){
     mainWindow.webContents.send('request-elements','saving file ...');
-    console.log(contentToSave.content);
     ipcMain.on('send-elements',(e,content)=>{
-        console.log(content.fileDir);
-        if (contentToSave.content ==1) {
-            elements = content.elements;
+        //console.log(content.fileDir);
+        //console.log(contentToSave);
+        if (contentToSave == 1) {
+            elements = content.dialogs;
             fileDir = content.fileDir;
             numberOfElements = content.numberOfElements;
             let screenplay = require(fileDir);
@@ -90,8 +110,8 @@ function saveDoc(){
             screenplay = JSON.stringify(screenplay);
             fs.writeFile(fileDir,screenplay, (err)=>{
                 if(err) throw err;
-                else mainWindow.webContents.send('Saved','File saved');
-                contentToSave.content = 0;
+                else mainWindow.webContents.send('saved','File saved');
+                contentToSave = 0;
             });
         }else {
             console.log('no changes detected');
@@ -121,12 +141,12 @@ function createDocument(){
         createDocument.on('close',function(){
             addWindow = null;
         });
-}
+};
 
 //Adding a new file from the main window
 ipcMain.on('addDoc',(e,args)=>{
     createAddWindow();
-})
+});
 
 //Adding a new file from the addWindow
 ipcMain.on('newDoc', (e,title)=>{
@@ -144,7 +164,74 @@ ipcMain.on('newDoc', (e,title)=>{
 
 //Saving changes to the document
 ipcMain.on('unsaved-changes', (e,content)=>{
-    contentToSave = content;
+    contentToSave = content.content;
+    selectedScripts = content.scripts
+});
+//Saving the elements
+ipcMain.on('send-elements',(e,content)=>{
+    //console.log(content.fileDir);
+    //console.log(contentToSave);
+    if (contentToSave == 1) {
+        elements = content.dialogs;
+        fileDir = content.fileDir;
+        numberOfElements = content.numberOfElements;
+        let screenplay = require(fileDir);
+        screenplay.dialogs = elements;
+        screenplay.counter = numberOfElements;
+        console.log(screenplay);
+        screenplay = JSON.stringify(screenplay);
+        fs.writeFile(fileDir,screenplay, (err)=>{
+            if(err) throw err;
+            else mainWindow.webContents.send('saved','File saved');
+            contentToSave = 0;
+        });
+    }else {
+        console.log('no changes detected');
+    };
+
+});
+
+ipcMain.on('delete-script',(e,content)=>{
+    let filepath = 'data/'+content.filename+'.json';
+    fs.unlink(filepath,(err)=>{
+        if(err) throw err;
+        else{
+            mainWindow.webContents.send('show-new-item','File deleted successfully');
+        };
+    });
+});
+
+ipcMain.on('change-name',(e,content)=>{
+    changeNameWindow();
+});
+
+ipcMain.on('name-changed',(e,content)=>{
+    let fileDir = 'data/'+content;
+    mainWindow.webContents.send('request-elements','saving file ...');
+    ipcMain.on('send-elements',(e,content)=>{
+        console.log('Contenido: ',content);
+        screenplay = JSON.stringify(content);
+        fs.writeFile(fileDir,screenplay, (err)=>{
+            if(err) throw err;
+            else mainWindow.webContents.send('saved','File saved');
+        });
+    });
+    e.sender.send('name-changed','Name changed successfully');
+    mainWindow.webContents.send('show-new-item','New element added!');
+});
+
+ipcMain.on('switch-scripts',(e,content)=>{
+    console.log('Content parameter: ',content);
+    let filepath = 'data/'+content.filename+'.json';
+    let file = fs.readFileSync(filepath, 'utf8');
+    let prevScript = content.prevScript
+    let fileDir = 'data/'+prevScript+'.json';
+    if (prevScript != '') {
+        saveDoc();
+        mainWindow.webContents.send('switch-scripts',{file,prevScript});
+    }else{
+        mainWindow.webContents.send('switch-scripts',{file,prevScript});
+    };
 });
 
 //Menu template
@@ -165,8 +252,9 @@ const mainMenuTemplate = [
                 label:'Quit',
                 accelerator: process.platform == 'darwin' ? 'Command+Q': 'Ctrl+Q',
                 click(){
+                    //if (contentToSave.content == 1 || selectedScripts > 0)
                     if (contentToSave.content == 1){
-                        mainWindow.webContents.send('quit','Unsaved changes. Are you sure you want to leave?');
+                        mainWindow.webContents.send('quit','There are unsaved changes. Are you sure you want to leave?');
                     } else {
                         app.quit();
                     }
@@ -185,52 +273,66 @@ const mainMenuTemplate = [
                 click(){
                     saveDoc();
                 }
-            }
+            },
+            {
+                label: 'Zoom in',
+                accelerator: process.platform == 'darwin' ? 'Command+I' : 'Ctrl+I' ,
+                click(){
+                    mainWindow.webContents.send('zoom', 1);
+                }
+            },
+            {
+                label: 'Zoom out',
+                accelerator: process.platform == 'darwin' ? 'Command+O' : 'Ctrl+O',
+                click(){
+                    mainWindow.webContents.send('zoom', 0);
+                }
+            },
         ]
     },
     {
-        label:'Actions',
+        label:'Elements',
         submenu:[
             {
                 label:'Character',
                 accelerator: process.platform == 'darwin' ? 'Command+S': 'Alt+S',
                 click(){
-                    mainWindow.webContents.send('character','Add Character');
+                    mainWindow.webContents.send('add-element','character');
                 }
             },
             {
                 label:'Dialog',
                 accelerator: process.platform == 'darwin' ? 'Command+D': 'Alt+D',
                 click(){
-                    mainWindow.webContents.send('dialog','Add Dialog');
+                    mainWindow.webContents.send('add-element','dialog');
                 }
             },
             {
                 label:'Transition',
                 accelerator: process.platform == 'darwin' ? 'Command+T': 'Alt+T',
                 click(){
-                    mainWindow.webContents.send('transition','Add transition');
+                    mainWindow.webContents.send('add-element','transition');
                 }
             },
             {
                 label: 'Text',
                 accelerator: process.platform == 'darwin' ? 'Command+A': 'Alt+A',
                 click(){
-                    mainWindow.webContents.send('text','Add text');
+                    mainWindow.webContents.send('add-element','text');
                 }
             },
             {
                 label: 'Location',
                 accelerator: process.platform == 'darwin' ? 'Command+W': 'Alt+W',
                 click(){
-                    mainWindow.webContents.send('location','Add location');
+                    mainWindow.webContents.send('add-element','location');
                 }
             },
             {
-                label:'Shift Action',
+                label:'Shift Element',
                 accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Alt+Q',
                 click(){
-                    mainWindow.webContents.send('changeAction','Change Action');
+                    mainWindow.webContents.send('add-element','shift');
                 }
             },
         ]
@@ -244,7 +346,7 @@ if(process.env.NODE_ENV != 'production'){
         submenu:[
             {
                 label: 'Toggle DevTools',
-                accelerator: process.platform == 'darwin' ? 'Command+I': 'Ctrl+I',
+                accelerator: process.platform == 'darwin' ? 'Command+Shift+I': 'Ctrl+Shift+I',
                 click(item, focusedWindow){
                     focusedWindow.toggleDevTools();
                 }

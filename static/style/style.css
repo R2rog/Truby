@@ -102,6 +102,24 @@ button:hover{
   text-decoration: none;
 }
 
+.title-tools{
+  display:flex;
+  position: relative;
+  justify-content: flex-end;
+}
+
+.title-tools i{
+  font-size: 0.75rem;
+  margin-right: 2rem;
+  margin-top: 0.5rem;
+  color: white;
+  display: none;
+}
+
+.title-tools i:hover{
+  color: black;
+}
+
 #title{
   flex: 2;
   text-align: center;
@@ -174,12 +192,20 @@ button:hover{
   color: #111;
 }
 
+#img-placeholder{
+  height: 400px;
+  width: 600px;
+  margin-left: 30%;
+  margin-top: 10%;
+}
+
 #content{
   /*box-shadow: rgb(130, 130, 130) 0px 5px 4px 1px;*/
     hyphens: none;
-    display: block;
+    /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Cambia esto imbécil!!!!!!!!!!!!!!!!!!!!*/
+    display: none;
     position: relative;
-    z-index: 1;
+    z-index: 0;
     user-select: inherit;
     margin-top: 70px;
     margin-bottom: 0px;
@@ -195,22 +221,24 @@ button:hover{
     width: 586px !important;
     overflow: hidden;
     padding: 96px 91px 25% 139px !important;
+    transform: scale(1.0);
 }
+
 
 /*Toolvbar style*/
 #toolbar{
   font-family:'Roboto Mono', monospace ;
   font-weight: bold;
   display: flex;
+  position: fixed;;
   flex-direction: column;
   align-items: center;
   justify-content: space-evenly;
   width: 2rem;
   height: 40%;
-  position: fixed;
   padding-bottom: 10px;
-  margin-top: 15%;
   margin-left: 81%;
+  margin-top: 15%;
   cursor: pointer;
   background-color:#111;
 }
@@ -321,7 +349,7 @@ button:hover{
   font-size: 15px;
   margin-left: 70%;
   margin-top: 30%;
-  position: fixed;
+  position: relative;
 }
 
 #add-script{
@@ -339,4 +367,11 @@ button:hover{
 
 #add-script input{
   margin-top: 2rem;
+}
+
+/*Responisve media screen*/
+@media screen and (max-width:685px){
+  #toolbar{
+    margin-left: 96%;
+  }
 }
