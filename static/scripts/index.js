@@ -1,5 +1,3 @@
-//TODO: Testear la función de borrar guión  
-
 //Importing modules.
 const fs = require('fs');
 //const path = require('path');
@@ -19,11 +17,10 @@ let directory = './data';
 let filenames = fs.readdirSync(directory);
 let script = ''; //Current selected script.
 let currentIndex = 0; //Gives the position of the selected element on the NodeList
-let counter = 0; //Guves a unique key to every new element added
+let counter = 0; //Gives a unique key to every new element added
 let classes = ['text', 'character', 'dialog', 'location', 'transition'];
 let scale = 1.0; //Controls the scale for the content aspect of the page.
 let margin = 81; //Initial margin
-let unsavedChanges = 0;
 let selectedScripts = [];
 
 function openNav() {
@@ -44,25 +41,22 @@ function currentElemIndex(id) {
     let el = document.getElementById(id);
     let arr = content.childNodes;
     currentIndex = Array.prototype.indexOf.call(arr, el);
+    console.log('Current index from currentElemIndex: ',currentIndex);
 };
 
 //Function that controls the insertion of new elements
-function insertElement(newElement, newBr) {
+function insertElement(newElement) {
     let nodes = Array.from(content.childNodes);
-    console.log('Nodes pre-copy: ', nodes);
     if (currentIndex + 2 == content.childNodes.length) {
         content.appendChild(newElement);
-        //content.innerHTML += '<br>';
     } else {
-        //nodes.splice(currentIndex+2,0,newElement,newBr);
+        console.log('Current Index from insert element: ',currentIndex);
         nodes.splice(currentIndex + 1, 0, newElement);
         renderElements(nodes, newElement);
     }
     if (currentIndex != 0) {
         currentIndex += currentIndex + 1;
     }
-    //document.getElementById(currentIndex).focus();
-    console.log('Nodes post-copy: ', nodes);
 };
 
 //Function that adds elements when they are not located in the last position of the Node List.
@@ -76,19 +70,18 @@ function renderElements(arr, newElement) {
 
 //Function that creates a character html tag
 function newElement(type) {
-    console.log("Current counter: ", counter, "CurrentIndex: ", currentIndex);
+    console.log("Current counter: ", counter);
     counter = counter + 1;
     id = counter.toString();
     getId = "currentElemIndex(" + id + ")";
     let newElement = document.createElement("DIV");
-    let newBr = document.createElement("BR");
     newElement.setAttribute('class', type);
     newElement.setAttribute('id', id);
     newElement.setAttribute('tabindex', 0);
     newElement.setAttribute('data-placeholder', type)
     newElement.setAttribute('contentEditable', 'true');
     newElement.setAttribute("onclick", getId);
-    insertElement(newElement, newBr);
+    insertElement(newElement);
 };
 
 //Displays the titles for the available scripts
@@ -126,7 +119,6 @@ function displayTitles(filenames) {
 };
 
 function deleteScript(){
-    console.log("Delete script");
     ipcRenderer.send('delete-script',{
         filename: script
     });
@@ -134,89 +126,32 @@ function deleteScript(){
 
 function changeName(){
     ipcRenderer.send('change-name','Changing name ...');
-    console.log("Change name");
 };
-
-/*Prototype: Dsiplays the script into the content HTML;    
-function displayContent(el, filepath, filename){
-    let prevScript = script;
-    let file = require(filepath);
-    autosave(el,prevScript);
-    content.style.display = 'block';
-    selectedScripts += 1;
-    document.getElementById('img-placeholder').style.display = 'none';
-    //Reseting the values for a new file.
-    counter = 0;
-    currentIndex = 0;
-    document.getElementById('script-title').innerHTML = filename;
-    //Refreshing to the latest version of an script.
-    content.innerHTML = "";
-    //Filling the script elements into content HTML
-    console.log('Dialogos: ',file.dialogs);
-    file.dialogs.forEach(dialog => {
-        content.innerHTML += dialog; 
-    });
-    counter = file.counter;
-    currentIndex = file.dialogs.length-2;
-    //console.log('JSON counter: ',counter,' JSON currentIndex: ',currentIndex);
-    //console.log('Selected script: ',script);
-};*/
-
-/*Function that saves the script when the user changes to work on another title
-function autosave(el, prevScript) {
-    let selectedScript = el.innerHTML;
-    console.log('Previous script: ', script);
-    console.log('Selected script: ', selectedScript);
-    //let prevScript = script;
-    if (script == '') {
-        script = selectedScript;
-    } else {
-        //Saving the current script
-        let arr = content.childNodes
-        let dialogs = []
-        arr.forEach(element => {
-            dialogs.push(element.outerHTML);
-        });
-        ipcRenderer.send('send-elements', {
-            elements: dialogs,
-            fileDir: './data/' + script + '.json',
-            numberOfElements: counter
-        });
-        //Updating the global variable to the new script
-        prevEl = document.getElementById(script);
-        prevEl.style.color = '#1ed760';
-        script = selectedScript;
-    };
-};*/
-
 
 //Displays the selected script in the page when the tittle is clicked.
 function displayContent(el,i1,i2, filepath, filename) {
-    //console.log('filename',filename);
-    //TODO: Quitar el llamdado del file en el event Listener para que este se actualice cada vez que se le hace click.
-    //TODO: El problema está en que el archivo queda estático ya que se queda ahí cuando se crea la lista de títulos
     el.addEventListener('click', (e) => {
-        let previousScript;
         if(script != ''){        
             document.getElementById(script+'i1').style.display = 'none';
             document.getElementById(script+'i2').style.display = 'none';
-            previousScript = script;
+            let dialogs = [];
+            let arr = content.childNodes;
+            arr.forEach(element => {
+                dialogs.push(element.outerHTML);
+            });
+            ipcRenderer.send('switch-scripts', {
+                selectedScript: filename,
+                prevScript: script,
+                dialogs: dialogs,
+                counter: counter
+            });
         }else{
-            previousScript = script;
+            ipcRenderer.send('switch-scripts', {
+                selectedScript: filename,
+                prevScript: script
+            });
         }
-        let arr = content.childNodes
-        let dialogs = []
-        arr.forEach(element => {
-            dialogs.push(element.outerHTML);
-        });
-        ipcRenderer.send('switch-scripts', {
-            filename: filename,
-            prevScript: previousScript,
-            elements: dialogs,
-            numberOfElements: counter
-        });
         script = el.innerHTML;
-        console.log('Selected script: ',script);
         document.getElementById('script-title').innerHTML = script;
         i1.style.display = 'block';
         i2.style.display = 'block';
@@ -296,14 +231,14 @@ ipcRenderer.on('request-elements', (e, args) => {
     ipcRenderer.send('send-elements', {
         dialogs: dialogs,
         fileDir: './data/' + script + '.json',
-        numberOfElements: counter
+        counter: counter
     });
 });
 
 ipcRenderer.on('switch-scripts', (e, args) => {
     //let prevScript = args.prevScript;
-    console.log(args);
-    let file = JSON.parse(args.file);
+    console.log('Args: ',args);
+    let file = JSON.parse(args.selectedScript);
     //autosave(el, prevScript);
     content.style.display = 'block';
     selectedScripts += 1;
@@ -322,6 +257,9 @@ ipcRenderer.on('switch-scripts', (e, args) => {
     });
     counter = file.counter;
     currentIndex = file.dialogs.length - 2;
+    if(args.prevScript!=''){
+        document.getElementById(args.prevScript).style.color = '#1ed760';
+    };
 });
 
 ipcRenderer.on('saved', (e, args) => {

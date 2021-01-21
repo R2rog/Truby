@@ -28,9 +28,9 @@ app.on('ready', function(){
     }));
     //Saving before quiting the app if there are unsaved changes
     mainWindow.on('close', (e)=>{
-        if (contentToSave.content==1) {
-            saveDoc();
+        if (contentToSave ==1) {
             e.preventDefault();
+            saveDoc();
         } else {
             app.quit();   
         }
@@ -97,16 +97,15 @@ function changeNameWindow(){
 function saveDoc(){
     mainWindow.webContents.send('request-elements','saving file ...');
     ipcMain.on('send-elements',(e,content)=>{
-        //console.log(content.fileDir);
-        //console.log(contentToSave);
         if (contentToSave == 1) {
+            //console.log(content);
             elements = content.dialogs;
             fileDir = content.fileDir;
-            numberOfElements = content.numberOfElements;
+            counter = content.counter;
             let screenplay = require(fileDir);
             screenplay.dialogs = elements;
-            screenplay.counter = numberOfElements;
-            console.log(screenplay);
+            screenplay.counter = counter;
+            console.log('Saving this script ...',screenplay);
             screenplay = JSON.stringify(screenplay);
             fs.writeFile(fileDir,screenplay, (err)=>{
                 if(err) throw err;
@@ -151,7 +150,7 @@ ipcMain.on('addDoc',(e,args)=>{
 //Adding a new file from the addWindow
 ipcMain.on('newDoc', (e,title)=>{
     filepath = './data/' + title;
-    fs.writeFile(filepath,'{"script": "Hello World","dialogs":[],"characters":[],"locations":[],"counter":0}',(err) => { 
+    fs.writeFile(filepath,'{"dialogs":[],"characters":[],"locations":[],"counter":0}',(err) => { 
         if (err){
             e.sender.send('newDoc',err);
         }
@@ -167,18 +166,16 @@ ipcMain.on('unsaved-changes', (e,content)=>{
     contentToSave = content.content;
     selectedScripts = content.scripts
 });
+
 //Saving the elements
 ipcMain.on('send-elements',(e,content)=>{
-    //console.log(content.fileDir);
-    //console.log(contentToSave);
     if (contentToSave == 1) {
         elements = content.dialogs;
         fileDir = content.fileDir;
-        numberOfElements = content.numberOfElements;
+        numberOfElements = content.counter;
         let screenplay = require(fileDir);
         screenplay.dialogs = elements;
         screenplay.counter = numberOfElements;
-        console.log(screenplay);
         screenplay = JSON.stringify(screenplay);
         fs.writeFile(fileDir,screenplay, (err)=>{
             if(err) throw err;
@@ -209,7 +206,6 @@ ipcMain.on('name-changed',(e,content)=>{
     let fileDir = 'data/'+content;
     mainWindow.webContents.send('request-elements','saving file ...');
     ipcMain.on('send-elements',(e,content)=>{
-        console.log('Contenido: ',content);
         screenplay = JSON.stringify(content);
         fs.writeFile(fileDir,screenplay, (err)=>{
             if(err) throw err;
@@ -221,16 +217,23 @@ ipcMain.on('name-changed',(e,content)=>{
 });
 
 ipcMain.on('switch-scripts',(e,content)=>{
-    console.log('Content parameter: ',content);
-    let filepath = 'data/'+content.filename+'.json';
-    let file = fs.readFileSync(filepath, 'utf8');
+    let filepath = 'data/'+content.selectedScript+'.json';
+    let selectedScript = fs.readFileSync(filepath, 'utf8');
     let prevScript = content.prevScript
-    let fileDir = 'data/'+prevScript+'.json';
+    let fileDir = './data/'+prevScript+'.json';
     if (prevScript != '') {
-        saveDoc();
-        mainWindow.webContents.send('switch-scripts',{file,prevScript});
+        let screenplay = require(fileDir);
+        screenplay.dialogs = content.dialogs;
+        screenplay.counter = content.counter;
+        screenplay = JSON.stringify(screenplay);
+            fs.writeFile(fileDir,screenplay, (err)=>{
+                if(err) throw err;
+                else mainWindow.webContents.send('saved','File saved');
+            contentToSave = 0;
+        });
+        mainWindow.webContents.send('switch-scripts',{selectedScript,prevScript});
     }else{
-        mainWindow.webContents.send('switch-scripts',{file,prevScript});
+        mainWindow.webContents.send('switch-scripts',{selectedScript,prevScript});
     };
 });
 
@@ -253,9 +256,13 @@ const mainMenuTemplate = [
                 accelerator: process.platform == 'darwin' ? 'Command+Q': 'Ctrl+Q',
                 click(){
                     //if (contentToSave.content == 1 || selectedScripts > 0)
-                    if (contentToSave.content == 1){
-                        mainWindow.webContents.send('quit','There are unsaved changes. Are you sure you want to leave?');
+                    console.log('Content to save', contentToSave);
+                    if (contentToSave == 1){
+                        saveDoc()
+                        app.quit();
+                        //mainWindow.webContents.send('quit','There are unsaved changes. Are you sure you want to leave?');
                     } else {
+                        console.log('nothing to save');
                         app.quit();
                     }
                 }
