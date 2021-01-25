@@ -174,6 +174,27 @@ function addDoc() {
     ipcRenderer.send("addDoc", "Adding new doc");
 };
 
+function zoom(param){
+    let toolbar = document.getElementById('toolbar');
+    if (param == 0 && scale >= 0.9) {
+        scale -= 0.1;
+        margin -= 3;
+        content.style.transform = `scale(${scale})`;
+        toolbar.style.marginLeft = `${margin}%`;
+        console.log("Zooming out: ", scale);
+        console.log("New margin: ", margin);
+    } else if (param == 1 && scale <= 1.5) {
+        scale += 0.1;
+        margin += 3;
+        content.style.transform = `scale(${scale})`;
+        toolbar.style.marginLeft = `${margin}%`;
+        console.log("Zooming in: ", scale);
+        console.log("New margin: ", margin);
+    } else {
+        scale = scale;
+    }
+}
+
 //Macro Key Bindings to add new elements
 
 ipcRenderer.on('add-element', (e, args) => {
@@ -201,9 +222,11 @@ ipcRenderer.on('add-element', (e, args) => {
 
 //Zoom in function
 ipcRenderer.on('zoom', (e, args) => {
-    let toolbar = document.getElementById('toolbar');
-    //let newMargin = parseInt(toolbar.style.marginLeft);
+    zoom(args);
+    /*let toolbar = document.getElementById('toolbar');
+    let newMargin = parseInt(toolbar.style.marginLeft);
     if (args == 0 && scale >= 0.9) {
+        zoom(args);
         scale -= 0.1;
         margin -= 3;
         content.style.transform = `scale(${scale})`;
@@ -219,10 +242,11 @@ ipcRenderer.on('zoom', (e, args) => {
         console.log("New margin: ", margin);
     } else {
         scale = scale;
-    }
+    }*/
 });
 
 ipcRenderer.on('request-elements', (e, args) => {
+    console.log('Requesting elements...');
     let arr = content.childNodes
     let dialogs = []
     arr.forEach(element => {

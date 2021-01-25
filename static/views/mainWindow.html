@@ -42,22 +42,28 @@
     <div id="content" contenteditable="true"> </div>
     <div id="toolbar"  class="noprint">
       <div class="tool" onclick="newElement('text')">
-        <a >A</a><span class="tooltiptext">ction</span>
+        <a >A</a><span class="tooltiptext">ction (Alt+A)</span>
       </div>
       <div class="tool" onclick="newElement('character')">
-        <a >C</a><span class="tooltiptext">haracter</span>
+        <a >C</a><span class="tooltiptext">haracter (Alt+S)</span>
       </div>
       <div class="tool" onclick="newElement('dialog')">
-        <a >D</a><span class="tooltiptext">ialog</span>
+        <a >D</a><span class="tooltiptext">ialog (Alt+D)</span>
       </div>
       <div class="tool" onclick="newElement('location')">
-      <a >L</a><span class="tooltiptext">ocation</span>
+      <a >L</a><span class="tooltiptext">ocation (Alt+W)</span>
       </div>
       <div class="tool" onclick="newElement('transition')">
-        <a >T</a><span class="tooltiptext">ransition</span>
+        <a >T</a><span class="tooltiptext">ransition (Alt+T)</span>
       </div>
       <div class="tool" onclick="changeClass()">
-        <a >-></a><span class="tooltiptext">Shift element</span>
+        <a >-></a><span class="tooltiptext">Shift element (Alt+Q)</span>
+      </div>
+      <div class="tool" onclick="zoom(1)">
+        <a><!--i class="fas fa-search-plus"></i-->+</a><span class="tooltiptext">Zoom In (Alt+I)</span>
+      </div>
+      <div class="tool" onclick="zoom(0)">
+        <a><!--i class="fas fa-search-minus"></i-->-</a><span class="tooltiptext">Zoom Out (Alt+O)</span>
       </div>
     </div>
   </div>

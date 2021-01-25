@@ -98,7 +98,6 @@ function saveDoc(){
     mainWindow.webContents.send('request-elements','saving file ...');
     ipcMain.on('send-elements',(e,content)=>{
         if (contentToSave == 1) {
-            //console.log(content);
             elements = content.dialogs;
             fileDir = content.fileDir;
             counter = content.counter;
@@ -255,20 +254,11 @@ const mainMenuTemplate = [
                 label:'Quit',
                 accelerator: process.platform == 'darwin' ? 'Command+Q': 'Ctrl+Q',
                 click(){
-                    //if (contentToSave.content == 1 || selectedScripts > 0)
-                    console.log('Content to save', contentToSave);
-                    if (contentToSave == 1){
-                        saveDoc()
-                        app.quit();
-                        //mainWindow.webContents.send('quit','There are unsaved changes. Are you sure you want to leave?');
-                    } else {
-                        console.log('nothing to save');
-                        app.quit();
-                    }
+                    app.quit();
                 }
             },
             {
-                label: 'New Doc',
+                label: 'New Script',
                 accelerator:process.platform == 'darwin' ? 'Command+N': 'Ctrl+N',
                 click(){
                     createDocument();
