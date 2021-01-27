@@ -1,17 +1,30 @@
 {
   "name": "truby",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A light weight, customizable, screenwritting tool.",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "build --dir",
+    "dist:linux": "electron-builder --linux"
   },
-  "author": "R2rog",
+  "author": "R2rog <sirR2rog@gmail.com>",
   "dependencies": {
-    "@editorjs/editorjs": "^2.18.0",
+    "@editorjs/editorjs": "^2.18.0"
+  },
+  "devDependencies": {
     "electron": "^10.1.1",
-    "print-js": "^1.3.1",
-    "requirejs": "^2.3.6"
+    "electron-builder": "^22.9.1"
+  },
+  "build":{
+    "appId": "com.truby.app",
+    "linux":{
+      "target":[
+        "deb"
+      ],
+      "category":"Productivity",
+      "icon": "./build/feather.png"
+    }
   }
 }

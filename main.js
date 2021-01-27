@@ -14,8 +14,10 @@ let selectedScripts = 0;
 //Listen for the app to be ready
 app.on('ready', function(){
     mainWindow = new BrowserWindow({
+        width: 1280,
+        height: 1024,
         webPreferences:{
-            nodeIntegration: true
+            nodeIntegration: true,
         },
         icon:path.join(__dirname, 'static/images/feather.png')
     });
