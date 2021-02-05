@@ -11,19 +11,20 @@
   },
   "author": "R2rog <sirR2rog@gmail.com>",
   "dependencies": {
-    "@editorjs/editorjs": "^2.18.0"
+    "@editorjs/editorjs": "^2.18.0",
+    "electron-store": "^7.0.1"
   },
   "devDependencies": {
     "electron": "^10.1.1",
     "electron-builder": "^22.9.1"
   },
-  "build":{
+  "build": {
     "appId": "com.truby.app",
-    "linux":{
-      "target":[
+    "linux": {
+      "target": [
         "deb"
       ],
-      "category":"Productivity",
+      "category": "Productivity",
       "icon": "./build/feather.png"
     }
   }
