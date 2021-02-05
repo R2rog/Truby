@@ -6,26 +6,27 @@
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "pack": "build --dir",
-    "dist:linux": "electron-builder --linux"
+    "pack": "electron-builder --dir",
+    "dist:linux": "electron-builder --linux",
+    "dist": "electron-builder"
   },
   "author": "R2rog <sirR2rog@gmail.com>",
   "dependencies": {
-    "@editorjs/editorjs": "^2.18.0",
-    "electron-store": "^7.0.1"
+    "electron-store": "^7.0.1",
+    "electron-sudo": "^4.0.12"
   },
   "devDependencies": {
-    "electron": "^10.1.1",
+    "electron": "^10.3.1",
     "electron-builder": "^22.9.1"
   },
   "build": {
     "appId": "com.truby.app",
-    "linux": {
-      "target": [
-        "deb"
-      ],
+    "mac": {
       "category": "Productivity",
-      "icon": "./build/feather.png"
+      "target": "dmg",
+      "extraDistFiles": "data",
+      "icon": "./build/icon.icns",
+      "type": "distribution"
     }
   }
 }

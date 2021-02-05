@@ -11,6 +11,9 @@ const {
     title
 } = require('process');
 
+const Store = require('electron-store');
+const store = new Store();
+
 // Global variables
 const content = document.getElementById('content');
 let directory = './data';
@@ -86,7 +89,10 @@ function newElement(type) {
 
 //Displays the titles for the available scripts
 function displayTitles(filenames) {
-    filenames.map(function (file) {
+    let Titles = store.get('Titles');
+    titles = Titles.titles;
+    console.log(titles);
+    titles.map(function (file) {
         filename = `${file.split('.json')[0]}`;
         filepath = '../../data/' + filename + '.json';
         el = document.createElement("li");
@@ -141,14 +147,14 @@ function displayContent(el,i1,i2, filepath, filename) {
             });
             ipcRenderer.send('switch-scripts', {
                 selectedScript: filename,
-                prevScript: script,
+                currentScript: script,
                 dialogs: dialogs,
                 counter: counter
             });
         }else{
             ipcRenderer.send('switch-scripts', {
                 selectedScript: filename,
-                prevScript: script
+                currentScript: script
             });
         }
         script = el.innerHTML;
@@ -253,6 +259,7 @@ ipcRenderer.on('request-elements', (e, args) => {
         dialogs.push(element.outerHTML);
     });
     ipcRenderer.send('send-elements', {
+        scriptTitle: script,
         dialogs: dialogs,
         fileDir: './data/' + script + '.json',
         counter: counter
@@ -262,7 +269,7 @@ ipcRenderer.on('request-elements', (e, args) => {
 ipcRenderer.on('switch-scripts', (e, args) => {
     //let prevScript = args.prevScript;
     console.log('Args: ',args);
-    let file = JSON.parse(args.selectedScript);
+    let file = args.selectedScript;
     //autosave(el, prevScript);
     content.style.display = 'block';
     selectedScripts += 1;
@@ -281,8 +288,9 @@ ipcRenderer.on('switch-scripts', (e, args) => {
     });
     counter = file.counter;
     currentIndex = file.dialogs.length - 2;
+    console.log(args);
     if(args.prevScript!=''){
-        document.getElementById(args.prevScript).style.color = '#1ed760';
+        document.getElementById(args.currentScriptTitle).style.color = '#1ed760';
     };
 });
 
