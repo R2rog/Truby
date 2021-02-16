@@ -2,13 +2,14 @@
   "name": "truby",
   "version": "0.0.1",
   "description": "A light weight, customizable, screenwritting tool.",
+  "homepage": "www.thetrubyapp.com",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "pack": "electron-builder --dir",
     "dist:linux": "electron-builder --linux",
-    "dist": "electron-builder"
+    "dist:mac": "electron-builder --mac"
   },
   "author": "R2rog <sirR2rog@gmail.com>",
   "dependencies": {
@@ -16,11 +17,19 @@
     "electron-sudo": "^4.0.12"
   },
   "devDependencies": {
-    "electron": "^10.3.1",
+    "electron": "9.1.0",
     "electron-builder": "^22.9.1"
   },
   "build": {
     "appId": "com.truby.app",
+    "productName": "Truby",
+    "linux":{
+      "target":[
+        "deb"
+      ],
+      "category": "Productivity",
+      "icon": "./build/feather.png"
+    },
     "mac": {
       "category": "Productivity",
       "target": "dmg",

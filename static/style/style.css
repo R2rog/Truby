@@ -25,9 +25,18 @@ body::-webkit-scrollbar-thumb{
 }
 
 
-@media print
+/*@media print
 {
 .noprint {display:none;}
+}*/
+@media print{
+  body * {
+    visibility: hidden;
+  }
+  .print-content, .print-content * {
+    visibility: visible;
+    padding: 0;
+  }
 }
 
 .mystyle{
@@ -106,12 +115,13 @@ button:hover{
   display:flex;
   position: relative;
   justify-content: flex-end;
+  height: 2rem;
 }
 
 .title-tools i{
-  font-size: 0.75rem;
-  margin-right: 2rem;
-  margin-top: 0.5rem;
+  font-size: 0.90rem;
+  margin-top: 0.75rem;
+  width: 3rem;
   color: white;
   display: none;
 }
@@ -174,7 +184,7 @@ button:hover{
   color: white;
   text-align: center;
   width: 100%;
-  height: 3rem;
+  height: 4 rem;
   margin-left: 0%;
   overflow: hidden;
   list-style-type: none;
@@ -202,12 +212,11 @@ button:hover{
 #content{
   /*box-shadow: rgb(130, 130, 130) 0px 5px 4px 1px;*/
     hyphens: none;
-    /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Cambia esto imbécil!!!!!!!!!!!!!!!!!!!!*/
     display: none;
     position: relative;
     z-index: 0;
     user-select: inherit;
-    margin-top: 70px;
+    margin-top: 50px;
     margin-bottom: 0px;
     background-color: rgb(255, 255, 255);
     font-family: "Courier Prime", Courier, monospace;
@@ -220,7 +229,7 @@ button:hover{
     height: 95% !important;
     width: 586px !important;
     overflow: hidden;
-    padding: 96px 91px 25% 139px !important;
+    padding: 96px 91px 25% 139px;
     transform: scale(1.0);
 }
 
@@ -290,7 +299,7 @@ button:hover{
     /*background-color: rgb(248, 76, 57);*/
     width: 30%;
     margin-top: 10px;
-    margin-left: 30%;
+    margin-left: 35%;
     text-justify: inter-word;
 }
 .character:empty::before{
@@ -298,13 +307,25 @@ button:hover{
   color:gray
 }
 
+.parenthesis{
+  font-family: 'Courier Prime', monospace;
+  width: 40%;
+  margin-top: 5px;
+  margin-left: 28%;
+  text-justify: inter-word;
+}
+.parenthesis:empty::before{
+  content:attr(data-placeholder);
+  color:gray
+}
+
 .dialog{
-    font-family: 'Courier Prime', monospace;
-    /*background-color: rgb(250, 128, 189);*/
-    width: 60%;
-    margin-left: 20%;
-    margin-right: 20%;
-    text-justify: inter-word;
+  font-family: 'Courier Prime', monospace;
+  /*background-color: rgb(250, 128, 189);*/
+  width: 63%;
+  margin-left: 20%;
+  margin-right: 20%;
+  text-justify: inter-word;
 }
 .dialog:empty::before{
   content:attr(data-placeholder);

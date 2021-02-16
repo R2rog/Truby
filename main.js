@@ -4,8 +4,9 @@ const Sudoer = require('electron-sudo');
 const url = require('url');
 const path = require('path');
 const fs = require('fs');
-const { ipcRenderer } = require('electron');
+const { ipcRenderer, dialog } = require('electron');
 const { app, BrowserWindow, Menu, webFrame, ipcMain } = electron;
+const nativeImage = require('electron').nativeImage
 process.env.NODE_ENV = undefined;
 
 //TODO:  Try both the sudo and store options
@@ -21,21 +22,21 @@ const store = new Store();
 
 //Listen for the app to be ready
 app.on('ready', function () {
-    /*let workingTitles = store.get('Titles');
     if(store.get('Titles') == undefined){
-        store.set('Titles',{'titles':[]});
+        store.set('Titles',{'titles':[],});
     }else{
         console.log('Titles already exists');
-    }*/
+    }
     let iconRoute;
-    process.platform == 'darwin' ? iconRoute = 'static/images/feather.icns' : iconRoute = 'static/images/feather.png'
+    process.platform == 'darwin' ? iconRoute = 'static/images/feather.icns' : iconRoute = nativeImage.createFromPath(__dirname+'/static/images/feather.png')
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 1024,
         webPreferences: {
             nodeIntegration: true,
+            enableRemoteModule: true,
         },
-        icon: path.join(__dirname, iconRoute)
+        icon: iconRoute,
     });
     mainWindow.setTitle('Truby');
     //Load main HTML page
@@ -53,16 +54,10 @@ app.on('ready', function () {
             app.quit();
         }
     });
-
     //Quiting the app after the window was closed.
     mainWindow.on('closed', (e) => {
         app.quit();
     })
-
-    //Build menu from the template
-    //TODO: Create a Menu module and import it from a different place.
-    //const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
-    //Insert menu
     Menu.setApplicationMenu(mainMenuTemplate);
 });
 
@@ -132,12 +127,15 @@ function saveDoc() {
                 else mainWindow.webContents.send('saved', 'File saved');
                 contentToSave = 0;
             });*/
-            let selectedScript = store.get(content.scriptTitle);
+            let scriptTitle = content.scriptTitle
+            let selectedScript = store.get(scriptTitle);
+            console.log(selectedScript);
             selectedScript.dialogs = content.dialogs;
             selectedScript.fileDir = content.fileDir;
             selectedScript.counter = content.counter;
-            console.log('Selected script: ', selectedScript);
-            store.set(content.scriptTitle, selectedScript);
+            console.log('Sript JSON being saved ...',selectedScript);
+            store.set(scriptTitle, selectedScript);
+            store.get(scriptTitle);
             mainWindow.webContents.send('saved', 'File saved');
             contentToSave = 0;
         } else {
@@ -188,9 +186,9 @@ ipcMain.on('newDoc', (e, title) => {
             mainWindow.webContents.send('show-new-item');
         }
     });*/
-    store.set(title,'{"dialogs":[],"characters":[],"locations":[],"counter":0}');
+    store.set(title,{"dialogs":[],"characters":[],"locations":[],"counter":0});
     let workingTitles = store.get('Titles');
-    workingTitles.titles.push(title);
+    workingTitles.push(title);
     store.set('Titles',workingTitles);
     e.sender.send('newDoc', "File written successfully");
     mainWindow.webContents.send('show-new-item');
@@ -202,48 +200,29 @@ ipcMain.on('unsaved-changes', (e, content) => {
     selectedScripts = content.scripts
 });
 
-/*Saving the elements
-ipcMain.on('send-elements', (e, content) => {
-    if (contentToSave == 1) {
-        elements = content.dialogs;
-        fileDir = content.fileDir;
-        numberOfElements = content.counter;
-        let screenplay = require(fileDir);
-        screenplay.dialogs = elements;
-        screenplay.counter = numberOfElements;
-        screenplay = JSON.stringify(screenplay);
-        fs.writeFile(fileDir, screenplay, (err) => {
-            if (err) throw err;
-            else mainWindow.webContents.send('saved', 'File saved');
-            contentToSave = 0;
-        });
-    } else {
-        console.log('no changes detected');
-    };
-
-});*/
-
 ipcMain.on('delete-script', (e, content) => {
-    /*
-    let filepath = 'data/' + content.filename + '.json';
-    fs.unlink(filepath, (err) => {
-        if (err) throw err;
-        else {
-            mainWindow.webContents.send('show-new-item', 'File deleted successfully');
-        };
-    });*/
     let title = content.filename;
     store.delete(title);
     let workingTitles = store.get('Titles');
-    let i = workingTitles.indexOf(title);
-    workingTitles.splice(i,1);
-    store.set('Title', workingTitles);
+    let newWorkingTitles = [];
+    workingTitles.forEach(element => {
+        if(element!=title){
+            newWorkingTitles.push(element);
+        }else{
+            console.log('next');
+        }
+    });
+    store.set('Titles', newWorkingTitles);
     mainWindow.webContents.send('show-new-item', 'File deleted successfully');
 });
 
 ipcMain.on('change-name', (e, content) => {
     changeNameWindow();
 });
+
+ipcMain.on('create-copy', (e,content)=>{
+    
+})
 
 ipcMain.on('name-changed', (e, content) => {
     let title = content;
@@ -256,13 +235,20 @@ ipcMain.on('name-changed', (e, content) => {
             else mainWindow.webContents.send('saved', 'File saved');
         });
         screenplay = JSON.stringify(content);*/
+        console.log('Content getting copied...', content);
         store.set(title,content)
+        let workingTitles = store.get('Titles');
+        workingTitles.push(title);
+        console.log('New working titles...',workingTitles);
+        store.set('Titles',workingTitles);
+        e.sender.send('newDoc', "File written successfully");
+        mainWindow.webContents.send('show-new-item');
     });
     e.sender.send('name-changed', 'Name changed successfully');
     mainWindow.webContents.send('show-new-item', 'New element added!');
 });
 
-//TODO: Jumtar todo en este mismo método sin tener que llamar a la función de saveDoc();
+//TODO: Entender como se están guardando los scripts en esta parte para evitar que haya redundancias
 ipcMain.on('switch-scripts', (e, content) => {
     /*
     let filepath = 'data/' + content.selectedScript + '.json';
@@ -285,15 +271,20 @@ ipcMain.on('switch-scripts', (e, content) => {
     };*/
     //Getting the current script.
     let currentScriptTitle = content.currentScript;
-    if(currentScriptTitle =! ''){
+    if(currentScriptTitle != ''){
         let currentScript = store.get(currentScriptTitle);
+        console.log('Script received...', currentScript);
         currentScript.dialogs = content.dialogs;
         currentScript.counter = content.counter;
+        console.log('Modified script',currentScript);
         store.set(currentScriptTitle,currentScript);//Saving the current script.
         //Retrieving the selected script from the internal file system.
+        console.log('Selected script ...');
         let selectedScript = store.get(content.selectedScript);
         mainWindow.webContents.send('switch-scripts', { selectedScript, currentScriptTitle});
     }else{
+        let selectedScript = store.get(content.selectedScript);
+        console.log(selectedScript);
         mainWindow.webContents.send('switch-scripts', { selectedScript, currentScriptTitle});
     }
 });
@@ -362,42 +353,49 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
             submenu: [
                 {
                     label: 'Character',
-                    accelerator: process.platform == 'darwin' ? 'cmd+1' : 'Alt+S',
+                    accelerator: 'Alt+S',
                     click() {
                         mainWindow.webContents.send('add-element', 'character');
                     }
                 },
                 {
                     label: 'Dialog',
-                    accelerator: process.platform == 'darwin' ? 'cmd+D' :'Alt+D',
+                    accelerator: 'Alt+D',
                     click() {
                         mainWindow.webContents.send('add-element', 'dialog');
                     }
                 },
                 {
                     label: 'Transition',
-                    accelerator: process.platform == 'darwin' ? 'cmd+T' : 'Alt+T',
+                    accelerator: 'Alt+T',
                     click() {
                         mainWindow.webContents.send('add-element', 'transition');
                     }
                 },
                 {
                     label: 'Text',
-                    accelerator: process.platform == 'darwin' ? 'cmd+A' : 'Alt+A',
+                    accelerator: 'Alt+A',
                     click() {
                         mainWindow.webContents.send('add-element', 'text');
                     }
                 },
                 {
+                    label: 'Parenthesis',
+                    accelerator: 'Alt+Z',
+                    click(){
+                        mainWindow.webContents.send('add-element','parenthesis')
+                    }
+                },
+                {
                     label: 'Location',
-                    accelerator: process.platform == 'darwin' ? 'cmd+W' : 'Alt+W',
+                    accelerator:'Alt+W',
                     click() {
                         mainWindow.webContents.send('add-element', 'location');
                     }
                 },
                 {
                     label: 'Shift Element',
-                    accelerator: process.platform == 'darwin' ? 'cmd+Q' : 'Alt+Q',
+                    accelerator: 'Alt+Q',
                     click() {
                         mainWindow.webContents.send('add-element', 'shift');
                     }
@@ -481,43 +479,43 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
             submenu: [
                 {
                     label: 'Character',
-                    accelerator: process.platform == 'darwin' ? 'cmd+S' : 'Alt+S',
+                    accelerator: 'Alt+S',
                     click() {
                         mainWindow.webContents.send('add-element', 'character');
                     }
                 },
                 {
                     label: 'Dialog',
-                    accelerator: process.platform == 'darwin' ? 'cmd+D' : 'Alt+D',
+                    accelerator: 'Alt+D',
                     click() {
-                        //mainWindow.webContents.send('add-element','dialog');
+                        mainWindow.webContents.send('add-element','dialog');
                         console.log('New Dialog');
                     }
                 },
                 {
                     label: 'Transition',
-                    accelerator: process.platform == 'darwin' ? 'cmd+T' : 'Alt+T',
+                    accelerator: 'Alt+T',
                     click() {
                         mainWindow.webContents.send('add-element', 'transition');
                     }
                 },
                 {
                     label: 'Text',
-                    accelerator: process.platform == 'darwin' ? 'cmd+A' : 'Alt+A',
+                    accelerator: 'Alt+A',
                     click() {
                         mainWindow.webContents.send('add-element', 'text');
                     }
                 },
                 {
                     label: 'Location',
-                    accelerator: process.platform == 'darwin' ? 'cmd+W' : 'Alt+W',
+                    accelerator: 'Alt+W',
                     click() {
                         mainWindow.webContents.send('add-element', 'location');
                     }
                 },
                 {
                     label: 'Shift Element',
-                    accelerator: process.platform == 'darwin' ? 'cmd+Q' : 'Alt+Q',
+                    accelerator:  'Alt+Q',
                     click() {
                         mainWindow.webContents.send('add-element', 'shift');
                     }

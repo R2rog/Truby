@@ -11,13 +11,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&family=Secular+One&display=swap" rel="stylesheet">
-  <!--link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css"-->
   <title id='docTitle'>Truby</title>
 </head>
 <body class="index">
   <div id="container" >
     <div id="banner" class="noprint">
-      <!--a href="" id="scripts" class="noprint">Scripts</a-->
       <div id="scripts">
         <a onclick="openNav()" class="noprint" id="colapse-icon">&#9776;</a>
         <span id="script-sidebar" class="noprint">Scripts</span>
@@ -27,8 +25,7 @@
         <span href="" id="script-title" class="noprint">Truby</span>
       </div>
       <div id="btns">
-        <!--button id="save" class="noprint">Save</button-->
-        <button id="print" class="noprint">Export/Print</button>
+        <button id="print" class="noprint">PDF/Print</button>
       </div>
     </div>
     <div id="mySidebar" class="noprint"><!--Contains the titles of the store-->
@@ -39,31 +36,34 @@
       </ul>
     </div>
     <img id="img-placeholder" src="../images/img-placeholder.png" alt="Placeholder">
-    <div id="content" contenteditable="true"> </div>
+    <div id="content" class='print-content' contenteditable="true"> </div>
     <div id="toolbar"  class="noprint">
       <div class="tool" onclick="newElement('text')">
-        <a >A</a><span class="tooltiptext">ction (Alt+A)</span>
+        <a class="noprint">A</a><span class="tooltiptext">ction (Alt+A)</span>
       </div>
       <div class="tool" onclick="newElement('character')">
-        <a >C</a><span class="tooltiptext">haracter (Alt+S)</span>
+        <a class="noprint">C</a><span class="tooltiptext">haracter (Alt+S)</span>
       </div>
       <div class="tool" onclick="newElement('dialog')">
-        <a >D</a><span class="tooltiptext">ialog (Alt+D)</span>
+        <a class="noprint">D</a><span class="tooltiptext">ialog (Alt+D)</span>
       </div>
       <div class="tool" onclick="newElement('location')">
-      <a >L</a><span class="tooltiptext">ocation (Alt+W)</span>
+      <a class="noprint">L</a><span class="tooltiptext">ocation (Alt+W)</span>
+      </div>
+      <div class="tool" onclick="newElement('parenthesis')">
+        <a class="noprint">P</a><span class="tooltiptext">arenthesis (Alt+Z)</span>
       </div>
       <div class="tool" onclick="newElement('transition')">
-        <a >T</a><span class="tooltiptext">ransition (Alt+T)</span>
+        <a class="noprint">T</a><span class="tooltiptext">ransition (Alt+T)</span>
       </div>
       <div class="tool" onclick="changeClass()">
-        <a >-></a><span class="tooltiptext">Shift element (Alt+Q)</span>
+        <a class="noprint">-></a><span class="tooltiptext">Shift element (Alt+Q)</span>
       </div>
       <div class="tool" onclick="zoom(1)">
-        <a><!--i class="fas fa-search-plus"></i-->+</a><span class="tooltiptext">Zoom In (Alt+I)</span>
+        <a class="noprint">+</a><span class="tooltiptext">Zoom In (Ctl+I)</span>
       </div>
       <div class="tool" onclick="zoom(0)">
-        <a><!--i class="fas fa-search-minus"></i-->-</a><span class="tooltiptext">Zoom Out (Alt+O)</span>
+        <a class="noprint" >-</a><span class="tooltiptext">Zoom Out (Ctl+O)</span>
       </div>
     </div>
   </div>

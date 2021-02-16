@@ -8,11 +8,11 @@
 <body>
     <form id="add-script">
         <div>
-            <label>Enter the new name of script</label>
+            <label>Enter the new name of the copy</label>
             <br>
             <input type="text" id="title" autofocus>
         </div>
-        <button type="submit" id="changeName">Change</button>
+        <button type="submit" id="changeName">Create</button>
     </form>
     <script>
         const electron = require('electron');
@@ -21,7 +21,8 @@
 
         form.addEventListener('submit', e =>{
             e.preventDefault();
-            let newTitle = document.getElementById('title').value + '.json';
+            //let newTitle = document.getElementById('title').value + '.json';
+            let newTitle = document.getElementById('title').value;
             ipcRenderer.send('name-changed', newTitle);
         });
         ipcRenderer.on('name-changed',(e,args)=>{
