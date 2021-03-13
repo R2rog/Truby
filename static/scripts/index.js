@@ -1,20 +1,11 @@
 //Importing modules.
-const fs = require('fs');
-//const path = require('path');
-const {
-    ipcRenderer
-} = require('electron');
-const {
-    dialog
-} = require('electron').remote;
-const {
-    title
-} = require('process');
-const nativeImage = require('electron').nativeImage
-
-
+const { ipcRenderer,remote} = require('electron');
+const { dialog} = require('electron').remote;
+const nativeImage = require('electron').nativeImage;
 const Store = require('electron-store');
-const { type } = require('os');
+const  $ = require('jquery');
+const jQuery = require('jquery');
+//Object instances
 const store = new Store();
 
 // Global variables
@@ -24,40 +15,102 @@ let filenames = 'fs.readdirSync(directory)';
 let script = ''; //Current selected script.
 let currentIndex = 0; //Gives the position of the selected element on the NodeList
 let counter = 0; //Gives a unique key to every new element added
-let classes = ['text', 'character', 'dialog', 'location', 'transition'];
+let classes = ['text', 'character', 'dialog', 'location', 'transition','parenthesis','scene'];
 let scale = 1.0; //Controls the scale for the content aspect of the page.
 let margin = 81; //Initial margin
 let selectedScripts = [];
 let unsavedChanges = 0;
+let shortcuts = [];
 
+//TODO: Add a scene label that helps the user navigate through the many scenes the script has
+
+//Verifies the OS that the app is running on
+function checkProcess() {
+    ipcRenderer.send('check-process', 'Verifying the OS...');
+};
+
+//Menu handler using jQuery
+$(function() {
+    function slideMenu() {
+      let activeState = $("#menu-container .menu-list").hasClass("active");
+      $("#menu-container .menu-list").animate({left: activeState ? "0%" : "-100%"}, 400);
+    }
+    $("#menu-wrapper").click(function(event) {
+      event.stopPropagation();
+      activeState = $("#menu-container .menu-list").hasClass("active");
+      if(activeState==true){
+        $("#scripts").css("color","white");
+      }else{
+        $("#scripts").css("color","#F55D3E");
+      }
+      $("#hamburger-menu").toggleClass("open");
+      $("#menu-container .menu-list").toggleClass("active");
+      //$("#script-sidebar").css("visibility","visible");
+      slideMenu();
+      $("body").toggleClass("overflow-hidden");
+    });
+  });
+
+/*Old navbar controller
 function openNav() {
     document.getElementById("mySidebar").style.width = "15rem";
     document.getElementById("scripts").style.background = "#F55D3E";
     document.getElementById("script-sidebar").style.visibility = "visible";
 }
-
 function closeNav() {
     document.getElementById("mySidebar").style.width = "0";
     document.getElementById("scripts").style.background = "#111";
     document.getElementById("script-sidebar").style.color = "#fff"
     document.getElementById("script-sidebar").style.visibility = "hidden";
-}
+}*/
+
+//Searches and displays all the scenes inside the document.
+function displayScenes(){
+    let nodes = Array.from(content.childNodes);
+    let ul = document.getElementById('scenes'+script);
+    ul.innerHTML = ""; //Cleanning the ul to prevent redundancy
+    //let scenes = document.getElementById('sceneTitles');
+    //let firstNode = document.createElement('li');
+    //firstNode.innerText = 'Scenes';
+    //scenes.appendChild(firstNode);
+    let div = document.getElementById('div'+script);
+    nodes.forEach(element => {
+        if (element.className == 'scene') {
+            let text = '';
+            let li = document.createElement("li");
+            let a = document.createElement("a");
+            let id = element.id;
+            text = document.createTextNode(element.innerText);
+            a.appendChild(text);
+            a.setAttribute('class', 'head');
+            li.appendChild(a);
+            li.addEventListener('click', (e) => {
+                let selectedScene = document.getElementById(id);
+                selectedScene.focus({preventScroll:false});
+            });
+            ul.appendChild(li);
+            div.appendChild(ul);
+        };
+    });
+    //document.getElementById('scenes').style.height = '100hv';
+    //scenes.style.marginTop = '2.70rem';
+};
 
 //Function that gets the id of the current element.
 function currentElemIndex(id) {
     let el = document.getElementById(id);
     let arr = content.childNodes;
     currentIndex = Array.prototype.indexOf.call(arr, el);
-    console.log('Current index from currentElemIndex: ',currentIndex);
+    console.log('Current index from currentElemIndex: ', currentIndex);
 };
 
 //Function that controls the insertion of new elements
 function insertElement(newElement) {
     let nodes = Array.from(content.childNodes);
-    if (currentIndex + 2 == content.childNodes.length) {
+    if (currentIndex + 1 == content.childNodes.length) {
         content.appendChild(newElement);
     } else {
-        console.log('Current Index from insert element: ',currentIndex);
+        console.log('Current Index from insert element: ', currentIndex);
         nodes.splice(currentIndex + 1, 0, newElement);
         renderElements(nodes, newElement);
     }
@@ -72,7 +125,6 @@ function renderElements(arr, newElement) {
     arr.forEach(dialog => {
         content.innerHTML += dialog.outerHTML;
     });
-    console.log('Focus event...',newElement.focus());
 };
 
 //Function that creates a character html tag
@@ -88,15 +140,110 @@ function newElement(type) {
     newElement.setAttribute('data-placeholder', type)
     newElement.setAttribute('contentEditable', 'true');
     newElement.setAttribute("onclick", getId);
-    if(type == 'parenthesis'){
+    if (type == 'parenthesis') {
         newElement.innerText = '()';
     }
     insertElement(newElement);
 };
 
+function searchText(action){
+    let text = document.getElementById('searchBar').value;
+    switch (action) {
+        case "search":
+            ipcRenderer.send('find-in-page',{text,action});
+            break;
+        case "delete":
+            document.getElementById('search-module').style.visibility = 'hidden';
+            ipcRenderer.send('find-in-page',{text,action});
+            break;
+    };
+};
+
+//Async function that gets the titles
+async function getTitles() {
+    let titles = await store.get('Titles');
+    let menu = document.getElementById('menu');
+    console.log('Titles: ',titles);
+    if(titles == undefined){
+        titles = await store.set('Titles', []);
+    }else{
+        titles.map(function (file) {
+            let filename = `${file.split('.json')[0]}`;
+            let filepath = '../../data/' + filename + '.json';
+            let div = document.createElement("div");
+            div.setAttribute('id','div'+filename);
+            ul = document.createElement('ul');
+            ul.setAttribute('class','menu-submenu accordion-content');
+            let ulId = 'scenes'+filename;
+            ul.setAttribute('id',ulId);
+            let li = document.createElement("li");
+            li.setAttribute('class','toggle accordion-toggle');
+            li.setAttribute('id','accordion'+filename);
+            let text = document.createTextNode(filename);
+            let a = document.createElement("a");
+            a.setAttribute('class','menu-link');
+            a.setAttribute('href', '#');
+            a.appendChild(text);
+            li.appendChild(a);
+            let addOn = document.createElement("div");
+            let i1 = document.createElement("i");
+            i1.setAttribute('class', 'far fa-copy');
+            i1.setAttribute('id', filename.toString() + 'i1');
+            i1.addEventListener('click', (e) => {
+                changeName();
+            });
+            let i2 = document.createElement("i");
+            i2.setAttribute('class', 'fas fa-trash');
+            i2.setAttribute('id', filename.toString() + 'i2');
+            i2.addEventListener('click', (e) => {
+                deleteScript();
+            });
+            let i3 = document.createElement("i");
+            i3.setAttribute('class','fas fa-arrow-down');
+            i3.setAttribute('id',filename.toString()+'i3');//Setting the dropdown menu control
+            i3.addEventListener('click',()=>{
+                let targetElement = '#accordion'+script;
+                if($(".menu-list .accordion-content").hasClass("active")){
+                    $(this).toggleClass("down");
+                }else{
+                    displayScenes();
+                    //$("#Prueba1i3").rotate(180);
+                };
+              $(targetElement).next().toggleClass("open").slideToggle("fast");
+              $(targetElement).toggleClass("active-tab").find(".menu-link").toggleClass("active");
+          
+              $(".menu-list .accordion-content").not($(targetElement).next()).slideUp("fast").removeClass("open");
+              $(".menu-list .accordion-toggle").not(jQuery(targetElement)).removeClass("active-tab").find(".menu-link").removeClass("active");
+            });
+            addOn.setAttribute('class', 'title-tools');
+            addOn.appendChild(i1);
+            addOn.appendChild(i2);
+            addOn.appendChild(i3);
+            a.setAttribute('id', filename);
+            //el.setAttribute('class', 'side-title');
+            li.appendChild(addOn);
+            a.appendChild(text);
+            li.appendChild(a);
+            div.appendChild(li);
+            div.appendChild(ul);
+            menu.appendChild(div);
+            //document.getElementById('titles').appendChild(el);
+            displayContent(a, i1, i2,i3, filepath, filename);
+        });
+        console.log('Titles: ',titles);
+    }
+    /*try {
+        titles = await store.get('Titles');
+        //let titles = store.get('Titles');
+    } catch (error) {
+        titles = await store.set('Titles', { 'titles': [], });
+        console.log(error);
+    }*/
+};
+
 //Displays the titles for the available scripts
-function displayTitles(filenames) {
-    let titles = store.get('Titles');
+/*function displayTitles(filenames) {
+    //let titles = store.get('Titles');
     console.log('Titles',titles);
     titles.map(function (file) {
         filename = `${file.split('.json')[0]}`;
@@ -135,49 +282,71 @@ function displayTitles(filenames) {
         document.getElementById('titles').appendChild(el);
         displayContent(localTitle,i1,i2,i3,filepath, filename);
     });
-};
+};*/
 
-function deleteScript(){
-    dialog.showMessageBox({ 
-        type: 'question', 
-        buttons: ['Delete','Cancel'], 
-        defaultId: 0, 
-        title: 'Confirmation required', 
+function deleteScript() {
+    dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Delete', 'Cancel'],
+        defaultId: 0,
+        title: 'Confirmation required',
         message: `Are you sure you want to delete ${script}?`,
-        icon:  nativeImage.createFromPath('./static/images/feather.png'),
-        detail: 'The script will be completley removed from the internal file system', 
-    }).then(box => { 
-        if(box.response == 0){
-            ipcRenderer.send('delete-script',{
+        icon: nativeImage.createFromPath('./static/images/feather.png'),
+        detail: 'The script will be completley removed from the internal file system',
+    }).then(box => {
+        if (box.response == 0) {
+            ipcRenderer.send('delete-script', {
                 filename: script
             });
-        }else{
+        } else {
             console.log(box.response);
         }
-    }).catch(err => { 
-        console.log(err) 
-    });  
+    }).catch(err => {
+        console.log(err)
+    });
 };
 
-function changeName(){
-    ipcRenderer.send('change-name','Changing name ...');
+function changeName() {
+    if (unsavedChanges == 1) {
+        dialog.showMessageBox({
+            type: 'question',
+            buttons: ['Ok'],
+            defaultId: 0,
+            title: 'Unsaved changes',
+            message: `Please save the current script before creating a copys`,
+            icon: nativeImage.createFromPath('./static/images/feather.png'),
+            detail: 'This will ensure that all your progress gets saved',
+        });
+    } else {
+        ipcRenderer.send('change-name', 'Changing name ...');
+    };    
+
 };
 
-
-function createCopy(){
-    console.log('Creating copy');
-    ipcRenderer.send('create-copy', 'Creating copy... ');
-}
+/*function createCopy() {
+    if (unsavedChanges == 1) {
+        dialog.showMessageBox({
+            type: 'question',
+            buttons: ['Ok'],
+            defaultId: 0,
+            title: 'Unsaved changes',
+            message: `Please save the current script before creating a copys`,
+            icon: nativeImage.createFromPath('./static/images/feather.png'),
+            detail: 'This will ensure that all your progress gets saved',
+        });
+    } else {
+        ipcRenderer.send('create-copy', 'Creating copy... ');
+    };    
+}*/
 
 //Displays the selected script in the page when the tittle is clicked.
-function displayContent(el,i1,i2,i3, filepath, filename) {
+function displayContent(el, i1, i2, i3, filepath, filename) {
     el.addEventListener('click', (e) => {
-        console.log(script != '');
-        if(script != ''){        
+        if (script != '') {
             console.log('False');
-            document.getElementById(script+'i1').style.display = 'none';
-            document.getElementById(script+'i2').style.display = 'none';
-            document.getElementById(script+'i3').style.display = 'none';
+            document.getElementById(script + 'i1').style.display = 'none';
+            document.getElementById(script + 'i2').style.display = 'none';
+            document.getElementById(script + 'i3').style.display = 'none';
             let dialogs = [];
             let arr = content.childNodes;
             arr.forEach(element => {
@@ -189,18 +358,18 @@ function displayContent(el,i1,i2,i3, filepath, filename) {
                 dialogs: dialogs,
                 counter: counter
             });
-        }else{
+        } else {
             console.log(filename);
             ipcRenderer.send('switch-scripts', {
                 selectedScript: filename,
                 currentScript: ''
             });
-        }
+        };
         script = el.innerHTML;
         document.getElementById('script-title').innerHTML = script;
         i1.style.display = 'block';
         i2.style.display = 'block';
-        //i3.style.display = 'block';
+        i3.style.display = 'block';
     });
 };
 
@@ -212,7 +381,7 @@ function changeClass() {
     let i = classes.indexOf(currentClass);
     if (i + 1 >= classes.length) i = -1;
     el.setAttribute('class', classes[i + 1]);
-    console.log('New class of the element', el.className);
+    el.innerText = classes[i+1];
 };
 
 //Adding a new file from the main window
@@ -220,7 +389,7 @@ function addDoc() {
     ipcRenderer.send("addDoc", "Adding new doc");
 };
 
-function zoom(param){
+function zoom(param) {
     let toolbar = document.getElementById('toolbar');
     if (param == 0 && scale >= 0.9) {
         scale -= 0.1;
@@ -275,27 +444,37 @@ ipcRenderer.on('zoom', (e, args) => {
     zoom(args);
 });
 
+//Sends the script contents to the copy method in the main process
 ipcRenderer.on('request-elements', (e, args) => {
-    console.log('Requesting elements...');
+    console.log('Args from the backend',args);
+    console.log('Requesting elements from copy method...');
     let arr = content.childNodes
     let dialogs = []
     arr.forEach(element => {
         dialogs.push(element.outerHTML);
     });
-    ipcRenderer.send('send-elements', {
-        scriptTitle: script,
-        dialogs: dialogs,
-        fileDir: './data/' + script + '.json',
-        counter: counter
-    });
+    if(args=='copy'){
+        console.log('Copiando');
+        ipcRenderer.send('send-elements-copy', {
+            scriptTitle: script,
+            dialogs: dialogs,
+            fileDir: './data/' + script + '.json',
+            counter: counter
+        });
+    }else{
+        ipcRenderer.send('send-elements-save', {
+            scriptTitle: script,
+            dialogs: dialogs,
+            fileDir: './data/' + script + '.json',
+            counter: counter
+        });
+    }
+    
 });
 
 ipcRenderer.on('switch-scripts', (e, args) => {
     //let prevScript = args.prevScript;
-    console.log('Args: ',args);
     let file = args.selectedScript;
-    let dialogs = [];
-    //autosave(el, prevScript);
     content.style.display = 'block';
     selectedScripts += 1;
     document.getElementById('img-placeholder').style.display = 'none';
@@ -310,8 +489,8 @@ ipcRenderer.on('switch-scripts', (e, args) => {
     });
     counter = file.counter;
     currentIndex = file.dialogs.length - 2;
-    if(args.currentScriptTitle!=''){
-        document.getElementById(args.currentScriptTitle).style.color = '#1ed760';
+    if (args.cScript!= '') {
+        document.getElementById(args.cScript).style.color = '#1ed760';
     }
 });
 
@@ -321,6 +500,43 @@ ipcRenderer.on('saved', (e, args) => {
     title.style.color = '#1ed760';
     unsavedChanges = 0;
     //script = selectedScript;
+});
+
+ipcRenderer.on('search',(e,args)=>{
+    document.getElementById('search-module').style.visibility = 'visible';
+});
+
+ipcRenderer.on('check-process', (e, args) => {
+    let toolbar = document.getElementById('toolbar');
+    if (args == 'darwin') {
+        shortcuts = [
+            "<div class='tool' 'id'='action' onclick=newElement('text')><a class='noprint'>A</a><span class='tooltiptext'>ction (Cmd+3)</span></div>",
+            "<div class='tool' onclick=newElement('character')><a class='noprint'>C</a><span class='tooltiptext'>haracter (Cmd+1)</span></div>",
+            "<div class='tool' onclick=newElement('dialog')><a class='noprint'>D</a><span class='tooltiptext'>ialog (Cmd+2)</span></div>",
+            "<div class='tool' onclick=newElement('location')><a class='noprint'>L</a><span class='tooltiptext'>ocation (Cmd+W)</span></div>",
+            "<div class='tool' onclick=newElement('parenthesis')><a class='noprint'>P</a><span class='tooltiptext'>arenthesis (Cmd+E)</span></div>",
+            "<div class='tool' onclick=newElement('transition')><a class='noprint'>T</a><span class='tooltiptext'>ransition (Cmd+T)</span></div>",
+            "<div class='tool' onclick=newElement('scene')><a class='noprint'>S</a><span class='tooltiptext'>cene (Cmd+0)</span></div>",
+            "<div class='tool' onclick=changeClass()><a class='noprint'>-></a><span class='tooltiptext'>Shift element (Cmd+Z)</span></div>",
+            "<div class='tool' onclick=zoom(1)><a class='noprint'>+</a><span class='tooltiptext'>Zoom In (Cmd+I)</span></div>",
+            "<div class='tool' onclick=zoom(0)><a class='noprint' >-</a><span class='tooltiptext'>Zoom Out (Cmd+O)</span></div>"
+        ]
+    } else {
+        shortcuts = [
+            "<div class='tool' onclick=newElement('text')><a class='noprint'>A</a><span class='tooltiptext'>ction (Alt+A)</span></div>",
+            "<div class='tool' onclick=newElement('character')><a class='noprint'>C</a><span class='tooltiptext'>haracter (Alt+S)</span></div>",
+            "<div class='tool' onclick=newElement('dialog')><a class='noprint'>D</a><span class='tooltiptext'>ialog (Alt+D)</span></div>",
+            "<div class='tool' onclick=newElement('location')><a class='noprint'>L</a><span class='tooltiptext'>ocation (Alt+W)</span></div>",
+            "<div class='tool' onclick=newElement('parenthesis')><a class='noprint'>P</a><span class='tooltiptext'>arenthesis (Alt+E)</span></div>",
+            "<div class='tool' onclick=newElement('transition')><a class='noprint'>T</a><span class='tooltiptext'>ransition (Alt+T)</span></div>",
+            "<div class='tool' onclick=changeClass()><a class='noprint'>-></a><span class='tooltiptext'>Shift element (Alt+Z)</span></div>",
+            "<div class='tool' onclick=zoom(1)><a class='noprint'>+</a><span class='tooltiptext'>Zoom In (Alt+I)</span></div>",
+            "<div class='tool' onclick=zoom(0)><a class='noprint' >-</a><span class='tooltiptext'>Zoom Out (Alt+O)</span></div>"
+        ]
+    };
+    shortcuts.forEach(shortcut => {
+        toolbar.innerHTML += shortcut;
+    });
 });
 
 ipcRenderer.on('quit', (e, args) => {
@@ -343,22 +559,23 @@ document.getElementById('content').onclick = e => { // alerting system that file
 };
 
 document.getElementById('print').addEventListener('click', (e) => {
-    if(unsavedChanges == 1){
-        dialog.showMessageBox({ 
-            type: 'question', 
-            buttons: ['Ok'], 
-            defaultId: 0, 
-            title: 'Unsaved changes', 
+    if (unsavedChanges == 1) {
+        dialog.showMessageBox({
+            type: 'question',
+            buttons: ['Ok'],
+            defaultId: 0,
+            title: 'Unsaved changes',
             message: `Please save the current script before printing`,
-            icon:  nativeImage.createFromPath('./static/images/feather.png'),
-            detail: 'This will ensure that all your progress gets saved', 
+            icon: nativeImage.createFromPath('./static/images/feather.png'),
+            detail: 'This will ensure that all your progress gets saved',
         });
-    }else{
+    } else {
         content.style.padding = 0;
         closeNav();
         window.print();
         document.location.reload();
     };
 });
-
-displayTitles(filenames);
+checkProcess();
+getTitles();
+//displayTitles(filenames);

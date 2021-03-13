@@ -1,15 +1,16 @@
 {
-  "name": "truby",
-  "version": "0.0.1",
+  "name": "qwerty",
+  "version": "1.0.0",
   "description": "A light weight, customizable, screenwritting tool.",
-  "homepage": "www.thetrubyapp.com",
+  "homepage": "www.theqwertyapp.com",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "pack": "electron-builder --dir",
     "dist:linux": "electron-builder --linux",
-    "dist:mac": "electron-builder --mac"
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
   },
   "author": "R2rog <sirR2rog@gmail.com>",
   "dependencies": {
@@ -17,14 +18,15 @@
     "electron-sudo": "^4.0.12"
   },
   "devDependencies": {
-    "electron": "9.1.0",
-    "electron-builder": "^22.9.1"
+    "electron": "^11.3.0",
+    "electron-builder": "^22.9.1",
+    "jquery": "^3.6.0"
   },
   "build": {
-    "appId": "com.truby.app",
-    "productName": "Truby",
-    "linux":{
-      "target":[
+    "appId": "com.qwerty.app",
+    "productName": "qwerty",
+    "linux": {
+      "target": [
         "deb"
       ],
       "category": "Productivity",

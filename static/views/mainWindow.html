@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,67 +8,101 @@
   <link rel="stylesheet" href="../style/style.css">
   <script src="https://use.fontawesome.com/6cd9a4fb2b.js"></script>
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css">
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet"> <!--Google fonts API-->
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <!--Google fonts API-->
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&family=Secular+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&family=Secular+One&display=swap"
+    rel="stylesheet">
   <title id='docTitle'>Truby</title>
 </head>
+
 <body class="index">
-  <div id="container" >
+  <div id="container">
     <div id="banner" class="noprint">
-      <div id="scripts">
+      <!--div id="scripts">
         <a onclick="openNav()" class="noprint" id="colapse-icon">&#9776;</a>
         <span id="script-sidebar" class="noprint">Scripts</span>
-        <a href="javascript:void(0)" class="noprint" onclick="closeNav()"  id="times-icon"> &times;</a>
+        <a href="javascript:void(0)" class="noprint" onclick="closeNav()" id="times-icon"> &times;</a>
+      </div-->
+      <div id="menu-wrapper">
+        <div id="hamburger-menu"><span></span><span></span><span></span></div>
+        <!-- hamburger-menu -->
       </div>
       <div id="title">
-        <span href="" id="script-title" class="noprint">Truby</span>
+        <span href="" id="script-title" class="noprint">qwerty</span>
+      </div>
+      <div id='search-module'>
+        <a onclick="searchText('delete')"><i class="fas fa-times"></i></a>
+        <input type="text" id="searchBar" name="input" required minlength="1" size="20">
+        <a onclick="searchText('search')"><i class="fas fa-search"></i></a>
       </div>
       <div id="btns">
         <button id="print" class="noprint">PDF/Print</button>
       </div>
     </div>
-    <div id="mySidebar" class="noprint"><!--Contains the titles of the store-->
+    <!--div id="mySidebar" class="noprint"><Old title barContains the titles of the store>
       <ul id="titles" class="noprint">
       </ul>
       <ul>
         <li><a href="javascript:void(0)" class="noprint" onclick="addDoc()" id=plus-icon">&plus;Add script</a></li>
       </ul>
+    </div-->
+    <div id="menu-container">
+      <!-- menu-wrapper -->
+      <ul id="menu" class="menu-list accordion">
+        <div>
+          <li id="nav1" class="toggle accordion-toggle">
+            <span class="icon-plus"></span>
+            <a class="menu-link" href="#">Menu1</a>
+          </li>
+          <!-- accordion-toggle -->
+          <ul class="menu-submenu accordion-content">
+            <li><a class="head" href="#">Submenu1</a></li>
+            <li><a class="head" href="#">Submenu2</a></li>
+            <li><a class="head" href="#">Submenu3</a></li>
+          </ul>
+        </div>
+        <!-- menu-submenu accordon-content-->
+        <li id="nav2" class="toggle accordion-toggle">
+          <span class="icon-plus"></span>
+          <a class="menu-link" href="#">Menu2</a>
+        </li>
+        <!-- accordion-toggle -->
+        <ul class="menu-submenu accordion-content">
+          <li><a class="head" href="#">Submenu1</a></li>
+          <li><a class="head" href="#">Submenu2</a></li>
+        </ul>
+        <!-- menu-submenu accordon-content-->
+        <li id="nav3" class="toggle accordion-toggle">
+          <span class="icon-plus"></span>
+          <a class="menu-link" href="#">Menu3</a>
+        </li>
+        <!-- accordion-toggle -->
+        <ul class="menu-submenu accordion-content">
+          <li><a class="head" href="#">Submenu1</a></li>
+          <li><a class="head" href="#">Submenu2</a></li>
+          <li><a class="head" href="#">Submenu3</a></li>
+          <li><a class="head" href="#">Submenu4</a></li>
+        </ul>
+        <!-- menu-submenu accordon-content-->
+      </ul>
+      <!-- menu-list accordion-->
+    </div>
+    <!-- menu-container -->
+    <div id="scenes" class="noprint">
+      <!--Contains the titles of the store-->
+      <ul id="sceneTitles" class="noprint">
+      </ul>
     </div>
     <img id="img-placeholder" src="../images/img-placeholder.png" alt="Placeholder">
     <div id="content" class='print-content' contenteditable="true"> </div>
-    <div id="toolbar"  class="noprint">
-      <div class="tool" onclick="newElement('text')">
-        <a class="noprint">A</a><span class="tooltiptext">ction (Alt+A)</span>
-      </div>
-      <div class="tool" onclick="newElement('character')">
-        <a class="noprint">C</a><span class="tooltiptext">haracter (Alt+S)</span>
-      </div>
-      <div class="tool" onclick="newElement('dialog')">
-        <a class="noprint">D</a><span class="tooltiptext">ialog (Alt+D)</span>
-      </div>
-      <div class="tool" onclick="newElement('location')">
-      <a class="noprint">L</a><span class="tooltiptext">ocation (Alt+W)</span>
-      </div>
-      <div class="tool" onclick="newElement('parenthesis')">
-        <a class="noprint">P</a><span class="tooltiptext">arenthesis (Alt+Z)</span>
-      </div>
-      <div class="tool" onclick="newElement('transition')">
-        <a class="noprint">T</a><span class="tooltiptext">ransition (Alt+T)</span>
-      </div>
-      <div class="tool" onclick="changeClass()">
-        <a class="noprint">-></a><span class="tooltiptext">Shift element (Alt+Q)</span>
-      </div>
-      <div class="tool" onclick="zoom(1)">
-        <a class="noprint">+</a><span class="tooltiptext">Zoom In (Ctl+I)</span>
-      </div>
-      <div class="tool" onclick="zoom(0)">
-        <a class="noprint" >-</a><span class="tooltiptext">Zoom Out (Ctl+O)</span>
-      </div>
+    <div id="toolbar" class="noprint">
     </div>
   </div>
   <script src="../scripts/index.js"></script>
-  <div id="credit" class="noprint">Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+  <div id="credit" class="noprint">Icons made by <a href="https://www.flaticon.com/authors/freepik"
+      title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
 </body>
+
 </html>

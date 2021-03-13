@@ -26,8 +26,13 @@
             ipcRenderer.send('name-changed', newTitle);
         });
         ipcRenderer.on('name-changed',(e,args)=>{
-            alert(args);
-            window.close();
+            if(args.valid){
+                alert(args.message);
+                window.close();
+            }else{
+                alert(args.message);
+            }
+            
         });
     </script>
 </body>
