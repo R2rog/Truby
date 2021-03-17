@@ -118,7 +118,7 @@ button:hover{
 .title-tools{
   display:flex;
   position: relative;
-  justify-content: flex-end;
+  justify-content: space-evenly;
   height: 2rem;
 }
 
@@ -132,6 +132,27 @@ button:hover{
 
 .title-tools i:hover{
   color: black;
+}
+
+.title-tools .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #F55D3E;
+  color: #111;
+  text-align: left;
+  /* Position the tooltip text */
+  position: absolute;
+  z-index: 1;
+  /*margin-left: -60px;*/
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.title-tools:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
 }
 
 .fas fa-arrow-down:target{
@@ -474,6 +495,8 @@ color:black;
     overflow: hidden;
     max-width: 100%;
     cursor: pointer;
+    display: flex;
+    justify-content: space-evenly;
 }
 
 
@@ -518,6 +541,14 @@ color:black;
     transform: translateY(-9px) rotate(-135deg);
 }
 
+#menu-wrapper a{
+  font-size: 1.5rem;
+  width: 100%;
+  color: #F55D3E;
+  visibility: hidden;
+  margin: 10px;
+}
+
 #menu-container .menu-list .menu-submenu {
     padding-top: 20px;
     padding-bottom: 20px;
@@ -558,6 +589,15 @@ color:black;
 }
 #menu-container .menu-list li:first-of-type {
     border-top: 0;
+}
+
+#menu-container .menu-list a:hover{
+  color: #111;
+}
+
+#menu-container .menu-list div:hover{
+  background-color: #F55D3E;
+  color: #111;
 }
 
 #menu-container ul{

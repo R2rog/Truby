@@ -22,8 +22,6 @@ let selectedScripts = [];
 let unsavedChanges = 0;
 let shortcuts = [];
 
-//TODO: Add a scene label that helps the user navigate through the many scenes the script has
-
 //Verifies the OS that the app is running on
 function checkProcess() {
     ipcRenderer.send('check-process', 'Verifying the OS...');
@@ -39,9 +37,9 @@ $(function() {
       event.stopPropagation();
       activeState = $("#menu-container .menu-list").hasClass("active");
       if(activeState==true){
-        $("#scripts").css("color","white");
+        $("#scripts").css("visibility","hidden");
       }else{
-        $("#scripts").css("color","#F55D3E");
+        $("#scripts").css("visibility","visible");
       }
       $("#hamburger-menu").toggleClass("open");
       $("#menu-container .menu-list").toggleClass("active");
@@ -50,19 +48,6 @@ $(function() {
       $("body").toggleClass("overflow-hidden");
     });
   });
-
-/*Old navbar controller
-function openNav() {
-    document.getElementById("mySidebar").style.width = "15rem";
-    document.getElementById("scripts").style.background = "#F55D3E";
-    document.getElementById("script-sidebar").style.visibility = "visible";
-}
-function closeNav() {
-    document.getElementById("mySidebar").style.width = "0";
-    document.getElementById("scripts").style.background = "#111";
-    document.getElementById("script-sidebar").style.color = "#fff"
-    document.getElementById("script-sidebar").style.visibility = "hidden";
-}*/
 
 //Searches and displays all the scenes inside the document.
 function displayScenes(){
@@ -200,7 +185,11 @@ async function getTitles() {
             });
             let i3 = document.createElement("i");
             i3.setAttribute('class','fas fa-arrow-down');
+            let span = document.createElement('span');
+            span.setAttribute('class','tooltiptext');
+            span.innerText = 'Scenes';
             i3.setAttribute('id',filename.toString()+'i3');//Setting the dropdown menu control
+            i3.appendChild(span);
             i3.addEventListener('click',()=>{
                 let targetElement = '#accordion'+script;
                 if($(".menu-list .accordion-content").hasClass("active")){
@@ -210,7 +199,7 @@ async function getTitles() {
                     //$("#Prueba1i3").rotate(180);
                 };
               $(targetElement).next().toggleClass("open").slideToggle("fast");
-              $(targetElement).toggleClass("active-tab").find(".menu-link").toggleClass("active");
+              //$(targetElement).toggleClass("active-tab").find(".menu-link").toggleClass("active");
           
               $(".menu-list .accordion-content").not($(targetElement).next()).slideUp("fast").removeClass("open");
               $(".menu-list .accordion-toggle").not(jQuery(targetElement)).removeClass("active-tab").find(".menu-link").removeClass("active");
@@ -228,7 +217,7 @@ async function getTitles() {
             div.appendChild(ul);
             menu.appendChild(div);
             //document.getElementById('titles').appendChild(el);
-            displayContent(a, i1, i2,i3, filepath, filename);
+            displayContent(a,div, i1, i2,i3, filepath, filename);
         });
         console.log('Titles: ',titles);
     }
@@ -240,49 +229,6 @@ async function getTitles() {
         console.log(error);
     }*/
 };
-
-//Displays the titles for the available scripts
-/*function displayTitles(filenames) {
-    //let titles = store.get('Titles');
-    console.log('Titles',titles);
-    titles.map(function (file) {
-        filename = `${file.split('.json')[0]}`;
-        filepath = '../../data/' + filename + '.json';
-        el = document.createElement("li");
-        localTitle = document.createElement("a");
-        addOn = document.createElement("div");
-        text = document.createTextNode(filename);
-        i1 = document.createElement("i");
-        i1.setAttribute('class','far fa-copy');
-        i1.setAttribute('id',filename.toString()+'i1');
-        i1.addEventListener('click',(e)=>{
-            changeName();
-        });
-        i2 = document.createElement("i");
-        i2.setAttribute('class','fas fa-trash');
-        i2.setAttribute('id',filename.toString()+'i2');
-        i2.addEventListener('click',(e)=>{
-            deleteScript();
-        });
-        i3 = document.createElement("i");
-        i3.setAttribute('class','fas fa-edit');
-        i3.setAttribute('id',filename.toString()+'i3');
-        i3.addEventListener('click',(e)=>{
-            //changeName();
-        });
-        addOn.setAttribute('class','title-tools');
-        addOn.appendChild(i1);
-        addOn.appendChild(i3);
-        addOn.appendChild(i2);
-        localTitle.setAttribute('id', filename);
-        el.setAttribute('class', 'side-title');
-        el.appendChild(addOn);
-        localTitle.appendChild(text);
-        el.appendChild(localTitle);
-        document.getElementById('titles').appendChild(el);
-        displayContent(localTitle,i1,i2,i3,filepath, filename);
-    });
-};*/
 
 function deleteScript() {
     dialog.showMessageBox({
@@ -323,30 +269,16 @@ function changeName() {
 
 };
 
-/*function createCopy() {
-    if (unsavedChanges == 1) {
-        dialog.showMessageBox({
-            type: 'question',
-            buttons: ['Ok'],
-            defaultId: 0,
-            title: 'Unsaved changes',
-            message: `Please save the current script before creating a copys`,
-            icon: nativeImage.createFromPath('./static/images/feather.png'),
-            detail: 'This will ensure that all your progress gets saved',
-        });
-    } else {
-        ipcRenderer.send('create-copy', 'Creating copy... ');
-    };    
-}*/
-
 //Displays the selected script in the page when the tittle is clicked.
-function displayContent(el, i1, i2, i3, filepath, filename) {
+function displayContent(el, div, i1, i2, i3, filepath, filename) {
     el.addEventListener('click', (e) => {
         if (script != '') {
-            console.log('False');
             document.getElementById(script + 'i1').style.display = 'none';
             document.getElementById(script + 'i2').style.display = 'none';
             document.getElementById(script + 'i3').style.display = 'none';
+            document.getElementById('accordion'+script).style = '#fff';
+            //console.log();
+            //document.getElementById('div'+script).style.backgroundColor = '#F55D3E;';
             let dialogs = [];
             let arr = content.childNodes;
             arr.forEach(element => {
@@ -364,9 +296,11 @@ function displayContent(el, i1, i2, i3, filepath, filename) {
                 selectedScript: filename,
                 currentScript: ''
             });
+            document.getElementById('div'+filename).style.backgroundColor = '#F55D3E;';
         };
         script = el.innerHTML;
         document.getElementById('script-title').innerHTML = script;
+        document.getElementById('accordion'+script).style.backgroundColor = '#F55D3E';
         i1.style.display = 'block';
         i2.style.display = 'block';
         i3.style.display = 'block';
@@ -497,9 +431,10 @@ ipcRenderer.on('switch-scripts', (e, args) => {
 ipcRenderer.on('saved', (e, args) => {
     //window.confirm(args);
     let title = document.getElementById(script);
+    document.getElementById('script-title').style.backgroundColor = '#1ed760';
     title.style.color = '#1ed760';
     unsavedChanges = 0;
-    //script = selectedScript;
+    //script = selectedScript;TODO: Checar que onda con esto jajaja
 });
 
 ipcRenderer.on('search',(e,args)=>{
@@ -555,10 +490,15 @@ document.getElementById('content').onclick = e => { // alerting system that file
         scripts: selectedScripts
     });
     let title = document.getElementById(script);
-    title.style.color = "red";
+    document.getElementById('script-title').style.color = 'red';
+    title.style.color = "black";
 };
 
 document.getElementById('print').addEventListener('click', (e) => {
+    let scenes = document.getElementsByClassName('scene');
+    for (let i = 0; i < scenes.length; i++) {
+        scenes[i].style.visibility = 'hidden';
+    };
     if (unsavedChanges == 1) {
         dialog.showMessageBox({
             type: 'question',
@@ -571,7 +511,6 @@ document.getElementById('print').addEventListener('click', (e) => {
         });
     } else {
         content.style.padding = 0;
-        closeNav();
         window.print();
         document.location.reload();
     };
