@@ -51,16 +51,15 @@ $(function() {
 
 //Searches and displays all the scenes inside the document.
 function displayScenes(){
+    console.log('func display scenes');
     let nodes = Array.from(content.childNodes);
-    let ul = document.getElementById('scenes'+script);
+    let elemID = script.split(" ").join("");
+    let ul = document.getElementById('scenes'+elemID);
     ul.innerHTML = ""; //Cleanning the ul to prevent redundancy
-    //let scenes = document.getElementById('sceneTitles');
-    //let firstNode = document.createElement('li');
-    //firstNode.innerText = 'Scenes';
-    //scenes.appendChild(firstNode);
-    let div = document.getElementById('div'+script);
+    let div = document.getElementById('div'+elemID);
     nodes.forEach(element => {
         if (element.className == 'scene') {
+            console.log(element);
             let text = '';
             let li = document.createElement("li");
             let a = document.createElement("a");
@@ -73,12 +72,11 @@ function displayScenes(){
                 let selectedScene = document.getElementById(id);
                 selectedScene.focus({preventScroll:false});
             });
+            //ul.style.display = "block";
             ul.appendChild(li);
             div.appendChild(ul);
         };
     });
-    //document.getElementById('scenes').style.height = '100hv';
-    //scenes.style.marginTop = '2.70rem';
 };
 
 //Function that gets the id of the current element.
@@ -154,16 +152,17 @@ async function getTitles() {
     }else{
         titles.map(function (file) {
             let filename = `${file.split('.json')[0]}`;
+            let elemID = filename.split(" ").join("");
             let filepath = '../../data/' + filename + '.json';
             let div = document.createElement("div");
-            div.setAttribute('id','div'+filename);
+            div.setAttribute('id','div'+elemID);
             ul = document.createElement('ul');
-            ul.setAttribute('class','menu-submenu accordion-content');
-            let ulId = 'scenes'+filename;
+            ul.setAttribute('class','menu-submenu accordion-content open');
+            let ulId = 'scenes'+elemID;
             ul.setAttribute('id',ulId);
             let li = document.createElement("li");
             li.setAttribute('class','toggle accordion-toggle');
-            li.setAttribute('id','accordion'+filename);
+            li.setAttribute('id','accordion'+elemID);
             let text = document.createTextNode(filename);
             let a = document.createElement("a");
             a.setAttribute('class','menu-link');
@@ -173,36 +172,59 @@ async function getTitles() {
             let addOn = document.createElement("div");
             let i1 = document.createElement("i");
             i1.setAttribute('class', 'far fa-copy');
-            i1.setAttribute('id', filename.toString() + 'i1');
+            i1.setAttribute('id', elemID + 'i1');
             i1.addEventListener('click', (e) => {
                 changeName();
             });
             let i2 = document.createElement("i");
             i2.setAttribute('class', 'fas fa-trash');
-            i2.setAttribute('id', filename.toString() + 'i2');
+            i2.setAttribute('id', elemID + 'i2');
             i2.addEventListener('click', (e) => {
                 deleteScript();
             });
+            /*let i3 = document.createElement("a");
+            i3.innerHTML = 'S';
+            i3.setAttribute('class','fas fa-arrow-down');*/
             let i3 = document.createElement("i");
             i3.setAttribute('class','fas fa-arrow-down');
-            let span = document.createElement('span');
-            span.setAttribute('class','tooltiptext');
-            span.innerText = 'Scenes';
-            i3.setAttribute('id',filename.toString()+'i3');//Setting the dropdown menu control
-            i3.appendChild(span);
+            //let span = document.createElement('span');
+            //span.setAttribute('class','tooltiptext');
+            //<a class='noprint'>A</a><span class='tooltiptext'>ction (Alt+A)</span>
+            //span.innerText = 'cenes';
+            sentence = 'Prueba 2'.replace(/\s+/g, ' ').trim();
+            i3.setAttribute('id',elemID+'i3');//Setting the dropdown menu control
+            //i3.appendChild(span);
             i3.addEventListener('click',()=>{
-                let targetElement = '#accordion'+script;
+                /*let targetElement = '#accordion'+script;
+                let targetElement2 = '#scenes'+filename;
+                console.log('Target element', targetElement);
                 if($(".menu-list .accordion-content").hasClass("active")){
-                    $(this).toggleClass("down");
+                    console.log($(".menu-list .accordion-content").hasClass("active"));
+                    $(this.toggleClass("active"));
                 }else{
+                    console.log($(".menu-list .accordion-content").hasClass("active"));
                     displayScenes();
+                    $(this).toggleClass("open");
                     //$("#Prueba1i3").rotate(180);
                 };
-              $(targetElement).next().toggleClass("open").slideToggle("fast");
+              $(targetElement2).next().toggleClass("open").slideToggle("fast");
               //$(targetElement).toggleClass("active-tab").find(".menu-link").toggleClass("active");
-          
-              $(".menu-list .accordion-content").not($(targetElement).next()).slideUp("fast").removeClass("open");
-              $(".menu-list .accordion-toggle").not(jQuery(targetElement)).removeClass("active-tab").find(".menu-link").removeClass("active");
+              $(".menu-list .accordion-content").not($(targetElement2).next()).slideUp("fast").removeClass("open");
+              $(".menu-list .accordion-toggle").not(jQuery(targetElement)).removeClass("active-tab").find(".menu-link").removeClass("active");*/
+              if($(".menu-list .accordion-content").hasClass("active")){
+                    $(this).toggleClass("down");
+                }else{
+                    $(this).css('backgroundColor','black')
+                };
+              displayScenes();
+              let targetElement = '#accordion'+elemID;
+              let targetElement2 = "#scenes"+elemID;
+              $(targetElement2).toggleClass("open").slideToggle("fast");
+              $(targetElement).toggleClass("active-tab").find(".menu-link").toggleClass("active");
+              $(".menu-list .accordion-content").not($(".accordion-toggle").next()).slideUp("fast").removeClass("open");
+              $(".menu-list .accordion-toggle").not(jQuery(".accordion-toggle")).removeClass("active-tab").find(".menu-link").removeClass("active");
+              console.log(targetElement);
+              console.log(targetElement2);
             });
             addOn.setAttribute('class', 'title-tools');
             addOn.appendChild(i1);
@@ -272,11 +294,12 @@ function changeName() {
 //Displays the selected script in the page when the tittle is clicked.
 function displayContent(el, div, i1, i2, i3, filepath, filename) {
     el.addEventListener('click', (e) => {
+        let elemID = filename.split(" ").join("");
         if (script != '') {
-            document.getElementById(script + 'i1').style.display = 'none';
-            document.getElementById(script + 'i2').style.display = 'none';
-            document.getElementById(script + 'i3').style.display = 'none';
-            document.getElementById('accordion'+script).style = '#fff';
+            document.getElementById(script.split(" ").join("") + 'i1').style.display = 'none';
+            document.getElementById(script.split(" ").join("") + 'i2').style.display = 'none';
+            document.getElementById(script.split(" ").join("")+ 'i3').style.display = 'none';
+            document.getElementById('accordion'+script.split(" ").join("")).style = '#111';
             //console.log();
             //document.getElementById('div'+script).style.backgroundColor = '#F55D3E;';
             let dialogs = [];
@@ -296,11 +319,11 @@ function displayContent(el, div, i1, i2, i3, filepath, filename) {
                 selectedScript: filename,
                 currentScript: ''
             });
-            document.getElementById('div'+filename).style.backgroundColor = '#F55D3E;';
+            document.getElementById('div'+elemID).style.backgroundColor = '#F55D3E;';
         };
         script = el.innerHTML;
         document.getElementById('script-title').innerHTML = script;
-        document.getElementById('accordion'+script).style.backgroundColor = '#F55D3E';
+        document.getElementById('accordion'+elemID).style.backgroundColor = '#F55D3E';
         i1.style.display = 'block';
         i2.style.display = 'block';
         i3.style.display = 'block';
@@ -336,14 +359,13 @@ function zoom(param) {
         scale += 0.1;
         margin += 3;
         content.style.transform = `scale(${scale})`;
-        closeNav();
         toolbar.style.marginLeft = `${margin}%`;
         console.log("Zooming in: ", scale);
         console.log("New margin: ", margin);
     } else {
         scale = scale;
     }
-}
+};
 
 //Macro Key Bindings to add new elements
 
@@ -431,7 +453,7 @@ ipcRenderer.on('switch-scripts', (e, args) => {
 ipcRenderer.on('saved', (e, args) => {
     //window.confirm(args);
     let title = document.getElementById(script);
-    document.getElementById('script-title').style.backgroundColor = '#1ed760';
+    document.getElementById('script-title').style.color = '#1ed760';
     title.style.color = '#1ed760';
     unsavedChanges = 0;
     //script = selectedScript;TODO: Checar que onda con esto jajaja
@@ -452,7 +474,7 @@ ipcRenderer.on('check-process', (e, args) => {
             "<div class='tool' onclick=newElement('parenthesis')><a class='noprint'>P</a><span class='tooltiptext'>arenthesis (Cmd+E)</span></div>",
             "<div class='tool' onclick=newElement('transition')><a class='noprint'>T</a><span class='tooltiptext'>ransition (Cmd+T)</span></div>",
             "<div class='tool' onclick=newElement('scene')><a class='noprint'>S</a><span class='tooltiptext'>cene (Cmd+0)</span></div>",
-            "<div class='tool' onclick=changeClass()><a class='noprint'>-></a><span class='tooltiptext'>Shift element (Cmd+Z)</span></div>",
+            "<div class='tool' onclick=changeClass()><a class='noprint'>-></a><span class='tooltiptext'>Shift element (Cmd+4)</span></div>",
             "<div class='tool' onclick=zoom(1)><a class='noprint'>+</a><span class='tooltiptext'>Zoom In (Cmd+I)</span></div>",
             "<div class='tool' onclick=zoom(0)><a class='noprint' >-</a><span class='tooltiptext'>Zoom Out (Cmd+O)</span></div>"
         ]
@@ -496,6 +518,7 @@ document.getElementById('content').onclick = e => { // alerting system that file
 
 document.getElementById('print').addEventListener('click', (e) => {
     let scenes = document.getElementsByClassName('scene');
+    document.getElementById('scripts').style.visibility = 'hidden';
     for (let i = 0; i < scenes.length; i++) {
         scenes[i].style.visibility = 'hidden';
     };
@@ -512,9 +535,8 @@ document.getElementById('print').addEventListener('click', (e) => {
     } else {
         content.style.padding = 0;
         window.print();
-        document.location.reload();
+        //document.location.reload();TODO: Uncomment reload
     };
 });
 checkProcess();
 getTitles();
-//displayTitles(filenames);

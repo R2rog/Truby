@@ -120,6 +120,7 @@ button:hover{
   position: relative;
   justify-content: space-evenly;
   height: 2rem;
+  cursor: pointer;
 }
 
 .title-tools i{
@@ -129,12 +130,18 @@ button:hover{
   color: white;
   display: none;
 }
-
+.title-tools a{
+  font-size: 0.90rem;
+  margin-top: 8px;
+  width: 3rem;
+  color: white;
+  display: none;
+}
 .title-tools i:hover{
   color: black;
 }
 
-.title-tools .tooltiptext {
+.title-tools a .tooltiptext {
   visibility: hidden;
   width: 120px;
   background-color: #F55D3E;
@@ -142,6 +149,7 @@ button:hover{
   text-align: left;
   /* Position the tooltip text */
   position: absolute;
+  text-transform: lowercase;
   z-index: 1;
   /*margin-left: -60px;*/
   /* Fade in tooltip */
@@ -150,7 +158,7 @@ button:hover{
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
-.title-tools:hover .tooltiptext {
+.title-tools a:hover .tooltiptext {
   visibility: visible;
   opacity: 1;
 }
@@ -558,7 +566,7 @@ color:black;
 
 #menu-container .menu-list {
     padding-left: 0;
-    margin-top: 2.70rem;
+    margin-top: 2.65rem;
     display: block;
     position: fixed;
     width: 14rem;
@@ -566,14 +574,14 @@ color:black;
     max-width: 220px;
     background: black;
     box-shadow: rgba(100,100,100,0.2) 6px 2px 10px;
-    z-index: 1;
+    z-index: 2;
     overflow-y: scroll;
     overflow-x: hidden;
     left: -100%;
 }
 
 #menu-container .menu-list::-webkit-scrollbar{
-  width: 0.10rem;
+  width: 0.20rem;
 }
 #menu-container .menu-list::-webkit-scrollbar-track{
   background-color: black;
@@ -585,10 +593,16 @@ color:black;
 #menu-container .menu-list li.accordion-toggle, #menu-container .menu-list .menu-login {
     font-size: 16px;
     padding: 10px;
-    border-top: 1px solid #dbdcd2;
+    text-transform: uppercase;
+    /*border-top: 1px solid #dbdcd2;*/
+    border-top: 1px solid black;
 }
 #menu-container .menu-list li:first-of-type {
     border-top: 0;
+}
+
+#menu-container .menu-list .head:hover{
+  color: #F55D3E;
 }
 
 #menu-container .menu-list a:hover{
@@ -602,6 +616,7 @@ color:black;
 
 #menu-container ul{
   list-style: none;
+  background-color: #111;
 }
 
 #menu-container a { 
@@ -658,14 +673,3 @@ color:black;
     opacity: 0;
 }
 
-.fas fa-arrow-down{
-  -moz-transition: all .5s linear;
-  -webkit-transition: all .5s linear;
-  transition: all .5s linear;
-}
-
-.fas fa-arrow-down.down{
-  -moz-transform:rotate(180deg);
-  -webkit-transform:rotate(180deg);
-  transform:rotate(180deg);
-}

@@ -10,7 +10,7 @@
         <div>
             <label>Enter the new script</label>
             <br>
-            <input type="text" id="title" autofocus>
+            <input type="text" id="title" autocapitalize="off" minlength="1" autofocus>
         </div>
         <button type="submit" id="newDoc">Add</button>
     </form>
@@ -23,7 +23,11 @@
             e.preventDefault();
             //let title = document.getElementById('title').value + '.json';
             let title = document.getElementById('title').value;
-            ipcRenderer.send('newDoc', title);
+            if(title.length<1){
+                alert('Please introduce a valid name')
+            }else{
+                ipcRenderer.send('newDoc', title);
+            };
         });
 
         ipcRenderer.on('newDoc',(e,arg)=>{

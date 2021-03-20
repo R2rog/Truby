@@ -10,7 +10,7 @@
         <div>
             <label>Enter the new name of the copy</label>
             <br>
-            <input type="text" id="title" autofocus>
+            <input type="text" id="title" minlength="1" autocapitalize="off" autofocus>
         </div>
         <button type="submit" id="changeName">Create</button>
     </form>
@@ -23,7 +23,11 @@
             e.preventDefault();
             //let newTitle = document.getElementById('title').value + '.json';
             let newTitle = document.getElementById('title').value;
-            ipcRenderer.send('name-changed', newTitle);
+            if(newTitle.length<1){
+                alert('Please introduce a valid name')
+            }else{
+                ipcRenderer.send('name-changed', newTitle);
+            };
         });
         ipcRenderer.on('name-changed',(e,args)=>{
             if(args.valid){

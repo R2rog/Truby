@@ -446,6 +446,13 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                     }
                 },
                 {
+                    label: 'Scene',
+                    accelerator: 'Command+0',
+                    click(){
+                        mainWindow.webContents.send('add-element','scene');
+                    }
+                },
+                {
                     label: 'Shift Element',
                     accelerator: 'Command+4',
                     click() {
@@ -571,6 +578,13 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                     accelerator: 'Alt+Z',
                     click() {
                         mainWindow.webContents.send('add-element', 'parenthesis');
+                    }
+                },
+                {
+                    label: 'Scene',
+                    accelerator: 'Alt+0',
+                    click(){
+                        mainWindow.webContents.send('add-element','scene');
                     }
                 },
                 {
