@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="../style/style.css">
+  <!--script>window.$ = window.jQuery = require('./node_modules/jquery/dist/jquery.min.js');</script-->
   <script src="https://use.fontawesome.com/6cd9a4fb2b.js"></script>
+  <!--script type="text/javascript" src="../scripts/jquery.min.js" onload="window.$ = window.jQuery = module.exports;"></script-->
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.13.0/css/all.css">
   <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
   <!--Google fonts API-->
@@ -14,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&family=Secular+One&display=swap"
     rel="stylesheet">
-  <title id='docTitle'>Truby</title>
+  <title id='docTitle'>qwerty</title>
 </head>
 
 <body class="index">
@@ -66,6 +68,16 @@
     <img id="img-placeholder" src="../images/img-placeholder.png" alt="Placeholder">
     <div id="content" class='print-content' contenteditable="true"> </div>
     <div id="toolbar" class="noprint">
+        <div class="tool" id="action" onclick="newElement('text')"><a class="noprint">A</a><span class='tooltiptext'></span></div>
+        <div class="tool" onclick="newElement('character')"><a class="noprint">C</a><span class='tooltiptext'></span></div>
+        <div class="tool" onclick="newElement('dialog')"><a class="noprint">D</a><span class='tooltiptext'></span></div>
+        <div class="tool" onclick="newElement('location')"><a class="noprint">L</a><span class='tooltiptext'></span></div>
+        <div class="tool" onclick="newElement('parenthesis')"><a class="noprint">P</a><span class='tooltiptext'></span></div>
+        <div class="tool" onclick="newElement('transition')"><a class="noprint">T</a><span class='tooltiptext'></span></div>
+        <div class="tool" onclick="newElement('scene')"><a class="noprint">S</a><span class='tooltiptext'></span></div>
+        <div class="tool" onclick="changeClass()"><a class="noprint">-&gt;</a><span class='tooltiptext'></span></div>
+        <div class="tool" onclick="zoom(1)"><a class="noprint">+</a><span class='tooltiptext'></span></div>
+        <div class="tool" onclick="zoom(0)"><a class="noprint">-</a><span class='tooltiptext'></span></div>
     </div>
   </div>
   <script src="../scripts/index.js"></script>

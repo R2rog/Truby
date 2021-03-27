@@ -4,6 +4,7 @@ const { dialog} = require('electron').remote;
 const nativeImage = require('electron').nativeImage;
 const Store = require('electron-store');
 const  $ = require('jquery');
+const os = require('os');
 const jQuery = require('jquery');
 //Object instances
 const store = new Store();
@@ -18,128 +19,16 @@ let counter = 0; //Gives a unique key to every new element added
 let classes = ['text', 'character', 'dialog', 'location', 'transition','parenthesis','scene'];
 let scale = 1.0; //Controls the scale for the content aspect of the page.
 let margin = 81; //Initial margin
-let selectedScripts = [];
 let unsavedChanges = 0;
+let expecingPaste = 0;
+let clipboard = [];
+let selectedScripts = [];
 let shortcuts = [];
 
-//Verifies the OS that the app is running on
-function checkProcess() {
-    ipcRenderer.send('check-process', 'Verifying the OS...');
-};
-
-//Menu handler using jQuery
-$(function() {
-    function slideMenu() {
-      let activeState = $("#menu-container .menu-list").hasClass("active");
-      $("#menu-container .menu-list").animate({left: activeState ? "0%" : "-100%"}, 400);
-    }
-    $("#menu-wrapper").click(function(event) {
-      event.stopPropagation();
-      activeState = $("#menu-container .menu-list").hasClass("active");
-      if(activeState==true){
-        $("#scripts").css("visibility","hidden");
-      }else{
-        $("#scripts").css("visibility","visible");
-      }
-      $("#hamburger-menu").toggleClass("open");
-      $("#menu-container .menu-list").toggleClass("active");
-      //$("#script-sidebar").css("visibility","visible");
-      slideMenu();
-      $("body").toggleClass("overflow-hidden");
-    });
-  });
-
-//Searches and displays all the scenes inside the document.
-function displayScenes(){
-    console.log('func display scenes');
-    let nodes = Array.from(content.childNodes);
-    let elemID = script.split(" ").join("");
-    let ul = document.getElementById('scenes'+elemID);
-    ul.innerHTML = ""; //Cleanning the ul to prevent redundancy
-    let div = document.getElementById('div'+elemID);
-    nodes.forEach(element => {
-        if (element.className == 'scene') {
-            console.log(element);
-            let text = '';
-            let li = document.createElement("li");
-            let a = document.createElement("a");
-            let id = element.id;
-            text = document.createTextNode(element.innerText);
-            a.appendChild(text);
-            a.setAttribute('class', 'head');
-            li.appendChild(a);
-            li.addEventListener('click', (e) => {
-                let selectedScene = document.getElementById(id);
-                selectedScene.focus({preventScroll:false});
-            });
-            //ul.style.display = "block";
-            ul.appendChild(li);
-            div.appendChild(ul);
-        };
-    });
-};
-
-//Function that gets the id of the current element.
-function currentElemIndex(id) {
-    let el = document.getElementById(id);
-    let arr = content.childNodes;
-    currentIndex = Array.prototype.indexOf.call(arr, el);
-    console.log('Current index from currentElemIndex: ', currentIndex);
-};
-
-//Function that controls the insertion of new elements
-function insertElement(newElement) {
-    let nodes = Array.from(content.childNodes);
-    if (currentIndex + 1 == content.childNodes.length) {
-        content.appendChild(newElement);
-    } else {
-        console.log('Current Index from insert element: ', currentIndex);
-        nodes.splice(currentIndex + 1, 0, newElement);
-        renderElements(nodes, newElement);
-    }
-    if (currentIndex != 0) {
-        currentIndex += currentIndex + 1;
-    }
-};
-
-//Function that adds elements when they are not located in the last position of the Node List.
-function renderElements(arr, newElement) {
-    content.innerHTML = "";
-    arr.forEach(dialog => {
-        content.innerHTML += dialog.outerHTML;
-    });
-};
-
-//Function that creates a character html tag
-function newElement(type) {
-    console.log("Current counter: ", counter);
-    counter = counter + 1;
-    id = counter.toString();
-    getId = "currentElemIndex(" + id + ")";
-    let newElement = document.createElement("DIV");
-    newElement.setAttribute('class', type);
-    newElement.setAttribute('id', id);
-    newElement.setAttribute('tabindex', 0);
-    newElement.setAttribute('data-placeholder', type)
-    newElement.setAttribute('contentEditable', 'true');
-    newElement.setAttribute("onclick", getId);
-    if (type == 'parenthesis') {
-        newElement.innerText = '()';
-    }
-    insertElement(newElement);
-};
-
-function searchText(action){
-    let text = document.getElementById('searchBar').value;
-    switch (action) {
-        case "search":
-            ipcRenderer.send('find-in-page',{text,action});
-            break;
-        case "delete":
-            document.getElementById('search-module').style.visibility = 'hidden';
-            ipcRenderer.send('find-in-page',{text,action});
-            break;
-    };
+//Function that executes at the same time that the app launches
+async function mainProcess(){
+    await getTitles();
+    await checkProcess();
 };
 
 //Async function that gets the titles
@@ -147,6 +36,7 @@ async function getTitles() {
     let titles = await store.get('Titles');
     let menu = document.getElementById('menu');
     console.log('Titles: ',titles);
+    //TODO: Split this method into two
     if(titles == undefined){
         titles = await store.set('Titles', []);
     }else{
@@ -195,22 +85,6 @@ async function getTitles() {
             i3.setAttribute('id',elemID+'i3');//Setting the dropdown menu control
             //i3.appendChild(span);
             i3.addEventListener('click',()=>{
-                /*let targetElement = '#accordion'+script;
-                let targetElement2 = '#scenes'+filename;
-                console.log('Target element', targetElement);
-                if($(".menu-list .accordion-content").hasClass("active")){
-                    console.log($(".menu-list .accordion-content").hasClass("active"));
-                    $(this.toggleClass("active"));
-                }else{
-                    console.log($(".menu-list .accordion-content").hasClass("active"));
-                    displayScenes();
-                    $(this).toggleClass("open");
-                    //$("#Prueba1i3").rotate(180);
-                };
-              $(targetElement2).next().toggleClass("open").slideToggle("fast");
-              //$(targetElement).toggleClass("active-tab").find(".menu-link").toggleClass("active");
-              $(".menu-list .accordion-content").not($(targetElement2).next()).slideUp("fast").removeClass("open");
-              $(".menu-list .accordion-toggle").not(jQuery(targetElement)).removeClass("active-tab").find(".menu-link").removeClass("active");*/
               if($(".menu-list .accordion-content").hasClass("active")){
                     $(this).toggleClass("down");
                 }else{
@@ -223,8 +97,6 @@ async function getTitles() {
               $(targetElement).toggleClass("active-tab").find(".menu-link").toggleClass("active");
               $(".menu-list .accordion-content").not($(".accordion-toggle").next()).slideUp("fast").removeClass("open");
               $(".menu-list .accordion-toggle").not(jQuery(".accordion-toggle")).removeClass("active-tab").find(".menu-link").removeClass("active");
-              console.log(targetElement);
-              console.log(targetElement2);
             });
             addOn.setAttribute('class', 'title-tools');
             addOn.appendChild(i1);
@@ -241,15 +113,163 @@ async function getTitles() {
             //document.getElementById('titles').appendChild(el);
             displayContent(a,div, i1, i2,i3, filepath, filename);
         });
-        console.log('Titles: ',titles);
+    };
+    return true;
+};
+
+//Verifies the OS that the app is running on
+async function checkProcess() {
+    //ipcRenderer.send('check-process', 'Verifying the OS...');
+    let toolbar = document.getElementById('toolbar');
+    let i = 0;
+    if(os.platform == 'darwin'){
+        shortcuts = [
+            "ction (Cmd+3)",
+            "haracter (Cmd+1)",
+            "ialog (Cmd+2)",
+            "ocation (Cmd+W)",
+            "arenthesis (Cmd+E)",
+            "ransition (Cmd+T)",
+            "cene (Cmd+0)",
+            "Shift element (Cmd+4)",
+            "Zoom In (Cmd+I)",
+            "Zoom Out (Cmd+O)"
+        ];
+    }else{
+        shortcuts = [
+            "ction (Alt+A)",
+            "haracter (Alt+S)",
+            "ialog (Alt+D)",
+            "ocation (Alt+W)",
+            "arenthesis (Alt+E)",
+            "ransition (Alt+T)",
+            "cene (Alt+0)",
+            "Shift element (Alt+Z)",
+            "Zoom In (Alt+I)",
+            "Zoom Out (Alt+O)"
+        ];
+    };
+    shortcuts.forEach(shortcut => {
+        text = document.createTextNode(shortcut);
+        toolbar.children[i].children[1].appendChild(text);
+        i = i+1;
+    });
+    return toolbar;
+};
+
+//Menu handler using jQuery
+$(function() {
+    function slideMenu() {
+      let activeState = $("#menu-container .menu-list").hasClass("active");
+      $("#menu-container .menu-list").animate({left: activeState ? "0%" : "-100%"}, 400);
     }
-    /*try {
-        titles = await store.get('Titles');
-        //let titles = store.get('Titles');
-    } catch (error) {
-        titles = await store.set('Titles', { 'titles': [], });
-        console.log(error);
-    }*/
+    $("#menu-wrapper").click(function(event) {
+      event.stopPropagation();
+      activeState = $("#menu-container .menu-list").hasClass("active");
+      if(activeState==true){
+        $("#scripts").css("visibility","hidden");
+      }else{
+        $("#scripts").css("visibility","visible");
+      }
+      $("#hamburger-menu").toggleClass("open");
+      $("#menu-container .menu-list").toggleClass("active");
+      //$("#script-sidebar").css("visibility","visible");
+      slideMenu();
+      $("body").toggleClass("overflow-hidden");
+    });
+  });
+
+//Searches and displays all the scenes inside the document.
+function displayScenes(){
+    let nodes = Array.from(content.childNodes);
+    let elemID = script.split(" ").join("");
+    let ul = document.getElementById('scenes'+elemID);
+    ul.innerHTML = ""; //Cleanning the ul to prevent redundancy
+    let div = document.getElementById('div'+elemID);
+    nodes.forEach(element => {
+        if (element.className == 'scene') {
+            let text = '';
+            let li = document.createElement("li");
+            let a = document.createElement("a");
+            let id = element.id;
+            text = document.createTextNode(element.innerText);
+            a.appendChild(text);
+            a.setAttribute('class', 'head');
+            li.appendChild(a);
+            li.addEventListener('click', (e) => {
+                let selectedScene = document.getElementById(id);
+                selectedScene.focus({preventScroll:false});
+            });
+            //ul.style.display = "block";
+            ul.appendChild(li);
+            div.appendChild(ul);
+        };
+    });
+};
+
+//Function that gets the id of the current element.
+function currentElemIndex(id) {
+    let el = document.getElementById(id);
+    let arr = content.childNodes;
+    currentIndex = Array.prototype.indexOf.call(arr, el);
+    console.log('Current index from currentElemIndex: ', currentIndex);
+};
+
+//Function that creates a character html tag
+function newElement(type) {
+    console.log("Current counter: ", counter);
+    counter = counter + 1;
+    id = counter.toString();
+    getId = "currentElemIndex(" + id + ")";
+    let newElement = document.createElement("DIV");
+    newElement.setAttribute('class', type);
+    newElement.setAttribute('id', id);
+    newElement.setAttribute('tabindex', 0);
+    newElement.setAttribute('data-placeholder', type)
+    newElement.setAttribute('contentEditable', 'true');
+    newElement.setAttribute("onclick", getId);
+    if (type == 'parenthesis') {
+        newElement.innerText = '()';
+    }
+    insertElement(newElement);
+};
+
+//Function that controls the insertion of new elements
+function insertElement(newElement) {
+    let nodes = Array.from(content.childNodes);
+    if (currentIndex + 1 == content.childNodes.length) {
+        content.appendChild(newElement);
+    } else {
+        console.log('Current Index from insert element: ', currentIndex);
+        nodes.splice(currentIndex + 1, 0, newElement);
+        renderElements(nodes, newElement);
+    }
+    if (currentIndex != 0) {
+        currentIndex += currentIndex + 1;
+    }
+};
+
+//Function that adds elements when they are not located in the last position of the Node List.
+function renderElements(arr, newElement) {
+    content.innerHTML = "";
+    arr.forEach(dialog => {
+        content.innerHTML += dialog.outerHTML;
+    });
+};
+
+
+
+function searchText(action){
+    let text = document.getElementById('searchBar').value;
+    switch (action) {
+        case "search":
+            ipcRenderer.send('find-in-page',{text,action});
+            break;
+        case "delete":
+            document.getElementById('search-module').style.visibility = 'hidden';
+            ipcRenderer.send('find-in-page',{text,action});
+            break;
+    };
 };
 
 function deleteScript() {
@@ -334,7 +354,6 @@ function displayContent(el, div, i1, i2, i3, filepath, filename) {
 function changeClass() {
     let el = content.childNodes[currentIndex];
     let currentClass = el.className;
-    console.log('Current class of the element', currentClass);
     let i = classes.indexOf(currentClass);
     if (i + 1 >= classes.length) i = -1;
     el.setAttribute('class', classes[i + 1]);
@@ -353,21 +372,17 @@ function zoom(param) {
         margin -= 3;
         content.style.transform = `scale(${scale})`;
         toolbar.style.marginLeft = `${margin}%`;
-        console.log("Zooming out: ", scale);
-        console.log("New margin: ", margin);
     } else if (param == 1 && scale <= 1.5) {
         scale += 0.1;
         margin += 3;
         content.style.transform = `scale(${scale})`;
         toolbar.style.marginLeft = `${margin}%`;
-        console.log("Zooming in: ", scale);
-        console.log("New margin: ", margin);
     } else {
         scale = scale;
     }
 };
 
-//Macro Key Bindings to add new elements
+//------------------------------------------------------- IPC renderer methods -----------------------------------------
 
 ipcRenderer.on('add-element', (e, args) => {
     switch (args) {
@@ -380,14 +395,17 @@ ipcRenderer.on('add-element', (e, args) => {
         case 'location':
             newElement('location');
             break;
+        case 'parenthesis':
+            newElement('parenthesis');
+            break;
         case 'text':
             newElement('text');
             break;
         case 'transition':
             newElement('transition');
             break;
-        case 'parenthesis':
-            newElement('parenthesis');
+        case 'scene':
+            newElement('scene');
             break;
         case 'shift':
             changeClass();
@@ -402,15 +420,12 @@ ipcRenderer.on('zoom', (e, args) => {
 
 //Sends the script contents to the copy method in the main process
 ipcRenderer.on('request-elements', (e, args) => {
-    console.log('Args from the backend',args);
-    console.log('Requesting elements from copy method...');
     let arr = content.childNodes
     let dialogs = []
     arr.forEach(element => {
         dialogs.push(element.outerHTML);
     });
     if(args=='copy'){
-        console.log('Copiando');
         ipcRenderer.send('send-elements-copy', {
             scriptTitle: script,
             dialogs: dialogs,
@@ -439,10 +454,18 @@ ipcRenderer.on('switch-scripts', (e, args) => {
     currentIndex = 0;
     //Refreshing to the latest version of an script.
     content.innerHTML = "";
+    let i = 0;
     //Filling the script elements into content HTML
     file.dialogs.forEach(dialog => {
         content.innerHTML += dialog;
+        if(content.childNodes[i].className == 'scene'){
+            content.childNodes[i].style.visibility = 'visible';
+            i = i+1;
+        }else{
+            i = i+1;
+        }
     });
+    console.log('Content', content.childNodes[0]);
     counter = file.counter;
     currentIndex = file.dialogs.length - 2;
     if (args.cScript!= '') {
@@ -456,48 +479,87 @@ ipcRenderer.on('saved', (e, args) => {
     document.getElementById('script-title').style.color = '#1ed760';
     title.style.color = '#1ed760';
     unsavedChanges = 0;
-    //script = selectedScript;TODO: Checar que onda con esto jajaja
+    //script = selectedScript;TODO: Check this call
 });
 
 ipcRenderer.on('search',(e,args)=>{
     document.getElementById('search-module').style.visibility = 'visible';
 });
 
-ipcRenderer.on('check-process', (e, args) => {
-    let toolbar = document.getElementById('toolbar');
-    if (args == 'darwin') {
-        shortcuts = [
-            "<div class='tool' 'id'='action' onclick=newElement('text')><a class='noprint'>A</a><span class='tooltiptext'>ction (Cmd+3)</span></div>",
-            "<div class='tool' onclick=newElement('character')><a class='noprint'>C</a><span class='tooltiptext'>haracter (Cmd+1)</span></div>",
-            "<div class='tool' onclick=newElement('dialog')><a class='noprint'>D</a><span class='tooltiptext'>ialog (Cmd+2)</span></div>",
-            "<div class='tool' onclick=newElement('location')><a class='noprint'>L</a><span class='tooltiptext'>ocation (Cmd+W)</span></div>",
-            "<div class='tool' onclick=newElement('parenthesis')><a class='noprint'>P</a><span class='tooltiptext'>arenthesis (Cmd+E)</span></div>",
-            "<div class='tool' onclick=newElement('transition')><a class='noprint'>T</a><span class='tooltiptext'>ransition (Cmd+T)</span></div>",
-            "<div class='tool' onclick=newElement('scene')><a class='noprint'>S</a><span class='tooltiptext'>cene (Cmd+0)</span></div>",
-            "<div class='tool' onclick=changeClass()><a class='noprint'>-></a><span class='tooltiptext'>Shift element (Cmd+4)</span></div>",
-            "<div class='tool' onclick=zoom(1)><a class='noprint'>+</a><span class='tooltiptext'>Zoom In (Cmd+I)</span></div>",
-            "<div class='tool' onclick=zoom(0)><a class='noprint' >-</a><span class='tooltiptext'>Zoom Out (Cmd+O)</span></div>"
-        ]
-    } else {
-        shortcuts = [
-            "<div class='tool' onclick=newElement('text')><a class='noprint'>A</a><span class='tooltiptext'>ction (Alt+A)</span></div>",
-            "<div class='tool' onclick=newElement('character')><a class='noprint'>C</a><span class='tooltiptext'>haracter (Alt+S)</span></div>",
-            "<div class='tool' onclick=newElement('dialog')><a class='noprint'>D</a><span class='tooltiptext'>ialog (Alt+D)</span></div>",
-            "<div class='tool' onclick=newElement('location')><a class='noprint'>L</a><span class='tooltiptext'>ocation (Alt+W)</span></div>",
-            "<div class='tool' onclick=newElement('parenthesis')><a class='noprint'>P</a><span class='tooltiptext'>arenthesis (Alt+E)</span></div>",
-            "<div class='tool' onclick=newElement('transition')><a class='noprint'>T</a><span class='tooltiptext'>ransition (Alt+T)</span></div>",
-            "<div class='tool' onclick=changeClass()><a class='noprint'>-></a><span class='tooltiptext'>Shift element (Alt+Z)</span></div>",
-            "<div class='tool' onclick=zoom(1)><a class='noprint'>+</a><span class='tooltiptext'>Zoom In (Alt+I)</span></div>",
-            "<div class='tool' onclick=zoom(0)><a class='noprint' >-</a><span class='tooltiptext'>Zoom Out (Alt+O)</span></div>"
-        ]
-    };
-    shortcuts.forEach(shortcut => {
-        toolbar.innerHTML += shortcut;
-    });
-});
-
 ipcRenderer.on('quit', (e, args) => {
     window.alert(args);
+});
+
+//Custom paste function to prevent redundancy
+ipcRenderer.on('paste',(e,args)=>{
+    //expecingPaste = 0;
+    console.log('Current index: ',currentIndex);
+    let contentNodes = Array.from(content.childNodes);
+    let firstHalf = [];
+    let secondHalf = [];
+    let newContent = [];
+    if(currentIndex >= contentNodes.length-1){
+        let firstHalf = contentNodes.slice(0,currentIndex=1);
+        newContent = firstHalf.concat(clipboard);
+    }else{
+        firstHalf = contentNodes.slice(0,currentIndex);
+        secondHalf = contentNodes.slice(currentIndex,contentNodes.length);
+        newContent = firstHalf.concat(clipboard);
+        newContent = newContent.concat(secondHalf);
+    }
+    console.log('New content', newContent);
+    console.log('Clipboard',clipboard);
+    clipboard = [];
+    //renderElements(newContent,'hi');
+});
+
+//Custom made cut,copy operation to prevent redundancy
+ipcRenderer.on('get-selection',(e,args)=>{
+    let selObj = window.getSelection();
+    let contentNodes = Array.from(content.childNodes);
+    let firstNode = selObj.anchorNode.parentElement;
+    let firstNodeId = contentNodes.indexOf(firstNode);
+    let lastNode = selObj.focusNode.parentElement;
+    let lastNodeId = contentNodes.indexOf(lastNode);
+    let selection =  [];
+    if(firstNodeId>lastNodeId){
+        tempFirst = firstNodeId;
+        firstNodeId = lastNodeId;
+        lastNodeId = tempFirst;
+        console.log('first node',firstNodeId);
+        console.log('last node',lastNodeId);
+    };
+    if(args == 'copy'){
+        for (index = firstNodeId; index <= lastNodeId; index++){
+            let newElement = document.createElement("DIV");
+            let id = Math.floor((Math.random() * 1000000) + 10000);
+            let getId = "currentElemIndex(" + id + ")";
+            newElement.setAttribute('class', contentNodes[index].attributes[0].value);
+            newElement.setAttribute('id',id );
+            newElement.setAttribute('tabindex', 0);
+            newElement.innerText = contentNodes[index].innerText;
+            newElement.setAttribute('data-placeholder', contentNodes[index].attributes[0].value);
+            newElement.setAttribute('contentEditable', 'true');
+            newElement.setAttribute("onclick", getId);   
+            selection.push(newElement);
+        }
+        console.log('Selection to copy...', selection);
+        console.log('Content nodes',content.childNodes);
+        clipboard = selection;
+        console.log('Id',selection[0].attributes);
+    }else if(args == 'cut'){
+        selection = contentNodes.slice(firstNodeId,lastNodeId+1);
+        let firstHalf = contentNodes.slice(0,firstNodeId);
+        let secondHalf = contentNodes.slice(lastNodeId+1,contentNodes.length);
+        let newContents = firstHalf.concat(secondHalf);
+        clipboard = newContents
+        console.log('New Contents', newContents);
+        console.log('Selection to cut...',selection);
+        //renderElements(newContents,'hi');
+    }else{
+        console.log('Begin node index',firstNodeId);
+        console.log('End node index', lastNodeId);
+    }
 });
 
 ipcRenderer.on('show-new-item', (e, args) => {
@@ -535,8 +597,8 @@ document.getElementById('print').addEventListener('click', (e) => {
     } else {
         content.style.padding = 0;
         window.print();
-        //document.location.reload();TODO: Uncomment reload
+        document.location.reload();
     };
 });
-checkProcess();
-getTitles();
+
+mainProcess();

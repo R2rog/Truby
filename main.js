@@ -33,7 +33,7 @@ app.on('ready', function () {
         },
         //icon: iconRoute,
     });
-    mainWindow.setTitle('Truby');
+    mainWindow.setTitle('qwerty');
     //Load main HTML page
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'static/views/mainWindow.html'),
@@ -246,12 +246,6 @@ ipcMain.on('change-name', (e, content) => {
 
 ipcMain.on('create-copy', (e, content) => {
 
-})
-
-ipcMain.on('check-process', (e, content) => {
-    let currentOS;
-    process.platform == 'darwin' ? currentOS = 'darwin' : currentOS = 'other';
-    mainWindow.webContents.send('check-process', currentOS);
 });
 
 ipcMain.on('name-changed', async (e, content) => {
@@ -288,45 +282,6 @@ ipcMain.on('find-in-page',async (e,content)=>{
 
 //TODO: Entender como se están guardando los scripts en esta parte para evitar que haya redundancias
 ipcMain.on('switch-scripts', (e, content) => {
-    /*
-    let filepath = 'data/' + content.selectedScript + '.json';
-    let selectedScript = fs.readFileSync(filepath, 'utf8');
-    let prevScript = content.prevScript
-    let fileDir = './data/' + prevScript + '.json';
-    if (prevScript != '') {
-        let screenplay = require(fileDir);
-        screenplay.dialogs = content.dialogs;
-        screenplay.counter = content.counter;
-        screenplay = JSON.stringify(screenplay);
-        fs.writeFile(fileDir, screenplay, (err) => {
-            if (err) throw err;
-            else mainWindow.webContents.send('saved', 'File saved');
-            contentToSave = 0;
-        });
-        mainWindow.webContents.send('switch-scripts', { selectedScript, prevScript });
-    } else {
-        mainWindow.webContents.send('switch-scripts', { selectedScript, prevScript });
-    };
-    //Getting the current script.
-    let currentScriptTitle = content.currentScript;
-    if (currentScriptTitle != '') {
-        //switchScripts(currentScriptTitle,content.selectedScript);
-        let currentScript = store.get(currentScriptTitle);
-        console.log('Script received...', currentScript);
-        currentScript.dialogs = content.dialogs;
-        currentScript.counter = content.counter;
-        console.log('Modified script', currentScript);
-        store.set(currentScriptTitle, currentScript);//Saving the current script.
-        //Retrieving the selected script from the internal file system.
-        console.log('Selected script ...');
-        let selectedScript = store.get(content.selectedScript);
-        mainWindow.webContents.send('switch-scripts', { selectedScript, currentScriptTitle });
-    } else {
-        let selectedScript = store.get(content.selectedScript);
-        //getScript(selectedScript,currentScriptTitle);
-        console.log(selectedScript);
-        mainWindow.webContents.send('switch-scripts', { selectedScript, currentScriptTitle });
-    }*/
     let currentScriptTitle = content.currentScript;
     let selectedScript = ''
     if (currentScriptTitle != '') {
@@ -387,8 +342,30 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
             submenu: [
                 { role: 'undo' },
                 { role: 'redo' },
-                { role: 'cut' },
-                { role: 'paste' },
+                { 
+                    //role: 'paste'
+                    label: 'Paste',
+                    accelerator: 'Command+V',
+                    click(){
+                        mainWindow.webContents.send('paste');
+                    }
+                },
+                { 
+                    //role: 'copy'
+                    label:'Copy',
+                    accelerator: 'Command+C',
+                    click(){
+                        mainWindow.webContents.send('get-selection','copy');
+                    }
+                },
+                { 
+                    //role: 'cut' 
+                    label: 'Cut',
+                    accelerator: 'Command+X',
+                    click(){
+                        mainWindow.webContents.send('get-selection','cut');
+                    }
+                },
                 { 
                     label: 'Find',//TODO: Implement electron-find to navigate the script more easily
                     accelerator: 'Command+F',
@@ -459,6 +436,13 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                         mainWindow.webContents.send('add-element', 'shift');
                     }
                 },
+                {
+                    label:'Selector',
+                    accelerator: 'Command+9',
+                    click(){
+                        mainWindow.webContents.send('get-selection','debug');
+                    }
+                }
             ]
         }
     ];
@@ -482,7 +466,7 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
     }
     template.unshift({ 'label': app.getName() });
     mainMenuTemplate = Menu.buildFromTemplate(template);
-} else {
+} else {// Linux and Windows keybindings
     const template = [
         {
             label: 'File',
