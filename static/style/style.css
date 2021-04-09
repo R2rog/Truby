@@ -64,7 +64,7 @@ body::-webkit-scrollbar-thumb{
   z-index: 2;
 }
 #banner span{
-  font-size: 25px;
+  font-size: 1.25rem;
   text-align: center;
   padding-left: 20px;
 }
@@ -89,7 +89,7 @@ button{
   border-radius: 12px;
 }
 button:hover{
-  background-color: #1ed760;
+  background-color: aqua;
   color: #111;
 }
 /*Containers inside the banner*/
@@ -170,7 +170,8 @@ button:hover{
 #title{
   flex: 2;
   text-align: right;
-  padding-right: 70px;  
+  padding-right: 12%;  
+  overflow: hidden;
 }
 #title a{
   font-size: 15px;
@@ -291,9 +292,9 @@ button:hover{
 
 #img-placeholder{
   height: 400px;
-  width: 600px;
-  margin-left: 30%;
-  margin-top: 10%;
+  width: 400px;
+  margin-left: 35%;
+  margin-top: 9%;
 }
 
 #content{
@@ -383,9 +384,10 @@ button:hover{
 /*Script elements styles*/
 .character{
     font-family: 'Courier Prime', monospace;
+    font-weight: bold;
     text-transform: uppercase;
     /*background-color: rgb(248, 76, 57);*/
-    width: 30%;
+    width: 50%;
     margin-top: 10px;
     margin-left: 35%;
     text-justify: inter-word;
@@ -444,7 +446,6 @@ button:hover{
 .transition{
     font-family:'Courier Prime', monospace ;
     text-transform: uppercase;
-    font-weight: bold;
     text-align: right;
     /*background-color: lightslategray;*/
     margin-top: 10px;
@@ -457,10 +458,11 @@ button:hover{
 
 .scene{
   font-family:'Courier Prime', monospace ;
+  color: #F55D3E;
   text-transform: uppercase;
   font-weight: bold;
   text-align: right;
-  background-color:#F55D3E;
+  /*background-color:#F55D3E;*/
   margin-top: 10px;
   width: 100%;
 }
@@ -471,8 +473,9 @@ color:black;
 
 #credit{
   font-size: 15px;
-  margin-left: 70%;
-  margin-top: 30%;
+  margin-left: 35%;
+  margin-top: 5%;
+  color: white;
   position: relative;
 }
 
@@ -497,6 +500,9 @@ color:black;
 @media screen and (max-width:685px){
   #toolbar{
     margin-left: 96%;
+  }
+  #script-title{
+    font-size: 0.5rem;
   }
 }
 
@@ -556,6 +562,39 @@ color:black;
   color: #F55D3E;
   visibility: hidden;
   margin: 10px;
+}
+
+#menu-wrapper  i{
+  color: #F55D3E;
+  font-size: 1.5rem;
+  padding-top: 10px;
+  padding-left: 20px;
+  visibility: hidden;
+}
+
+#menu-wrapper  i .tooltiptext1 {
+  visibility: hidden;
+  width: 200px;
+  font-family:'Roboto Mono', monospace;
+  font-size: 1rem;
+  background-color: #F55D3E;
+  text-transform: capitalize;
+  color: #111;
+  text-align: left;
+  /* Position the tooltip text */
+  position: absolute;
+  text-transform: lowercase;
+  z-index: 3;
+  /*margin-left: -60px;*/
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+#menu-wrapper  i:hover .tooltiptext1 {
+  visibility: visible;
+  opacity: 1;
 }
 
 #menu-container .menu-list .menu-submenu {

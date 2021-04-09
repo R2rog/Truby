@@ -8,8 +8,7 @@ const fs = require('fs');
 const { app, BrowserWindow, Menu, ipcMain } = electron;
 
 //Instances
-process.env.NODE_ENV = undefined;
-
+process.env.NODE_ENV = 'proudction';
 
 let mainWindow;
 let addWindow;
@@ -516,6 +515,44 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                         mainWindow.webContents.send('zoom', 0);
                     }
                 },
+            ]
+        },
+        {
+            label: 'Edit',
+            submenu: [
+                { role: 'undo' },
+                { role: 'redo' },
+                { 
+                    //role: 'paste'
+                    label: 'Paste',
+                    accelerator: 'Ctrl+V',
+                    click(){
+                        mainWindow.webContents.send('paste');
+                    }
+                },
+                { 
+                    //role: 'copy'
+                    label:'Copy',
+                    accelerator: 'Ctrl+C',
+                    click(){
+                        mainWindow.webContents.send('get-selection','copy');
+                    }
+                },
+                { 
+                    //role: 'cut' 
+                    label: 'Cut',
+                    accelerator: 'Ctrl+X',
+                    click(){
+                        mainWindow.webContents.send('get-selection','cut');
+                    }
+                },
+                { 
+                    label: 'Find',//TODO: Implement electron-find to navigate the script more easily
+                    accelerator: 'Ctrl+F',
+                    click(){
+                        mainWindow.webContents.send('search');
+                    }
+                }
             ]
         },
         {

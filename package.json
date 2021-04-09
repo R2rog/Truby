@@ -7,7 +7,6 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "electron .",
-    "test": "mocha",
     "pack": "electron-builder --dir",
     "dist:linux": "electron-builder --linux",
     "dist:mac": "electron-builder --mac",
@@ -21,7 +20,8 @@
   },
   "devDependencies": {
     "electron": "^11.3.0",
-    "electron-builder": "^22.9.1"
+    "electron-builder": "^22.9.1",
+    "electron-notarize": "^1.0.0"
   },
   "build": {
     "appId": "com.qwerty.app",

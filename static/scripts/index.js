@@ -25,6 +25,8 @@ let clipboard = [];
 let selectedScripts = [];
 let shortcuts = [];
 
+//TODO: Get the class of the current element so the 
+
 //Function that executes at the same time that the app launches
 async function mainProcess(){
     await getTitles();
@@ -35,7 +37,7 @@ async function mainProcess(){
 async function getTitles() {
     let titles = await store.get('Titles');
     let menu = document.getElementById('menu');
-    console.log('Titles: ',titles);
+    //console.log('Titles: ',titles);
     //TODO: Split this method into two
     if(titles == undefined){
         titles = await store.set('Titles', []);
@@ -127,11 +129,11 @@ async function checkProcess() {
             "ction (Cmd+3)",
             "haracter (Cmd+1)",
             "ialog (Cmd+2)",
-            "ocation (Cmd+W)",
+            "eather (Cmd+W)",
             "arenthesis (Cmd+E)",
             "ransition (Cmd+T)",
-            "cene (Cmd+0)",
-            "Shift element (Cmd+4)",
+            "arker (Cmd+0)",
+            "Change element(Cmd+4)",
             "Zoom In (Cmd+I)",
             "Zoom Out (Cmd+O)"
         ];
@@ -140,11 +142,11 @@ async function checkProcess() {
             "ction (Alt+A)",
             "haracter (Alt+S)",
             "ialog (Alt+D)",
-            "ocation (Alt+W)",
+            "eather (Alt+W)",
             "arenthesis (Alt+E)",
             "ransition (Alt+T)",
-            "cene (Alt+0)",
-            "Shift element (Alt+Z)",
+            "arker (Alt+0)",
+            "Change element(Alt+Z)",
             "Zoom In (Alt+I)",
             "Zoom Out (Alt+O)"
         ];
@@ -168,8 +170,10 @@ $(function() {
       activeState = $("#menu-container .menu-list").hasClass("active");
       if(activeState==true){
         $("#scripts").css("visibility","hidden");
+        $("#info").css("visibility", "hidden");
       }else{
         $("#scripts").css("visibility","visible");
+        $("#info").css("visibility", "visible");
       }
       $("#hamburger-menu").toggleClass("open");
       $("#menu-container .menu-list").toggleClass("active");
@@ -221,24 +225,27 @@ function newElement(type) {
     counter = counter + 1;
     id = counter.toString();
     getId = "currentElemIndex(" + id + ")";
-    let newElement = document.createElement("DIV");
+    let newElement = document.createElement("SPAN");
     newElement.setAttribute('class', type);
     newElement.setAttribute('id', id);
     newElement.setAttribute('tabindex', 0);
     newElement.setAttribute('data-placeholder', type)
-    newElement.setAttribute('contentEditable', 'true');
+    //newElement.setAttribute('contentEditable', 'true');
     newElement.setAttribute("onclick", getId);
     if (type == 'parenthesis') {
         newElement.innerText = '()';
     }
-    insertElement(newElement);
+    insertElement(newElement,id);
 };
 
 //Function that controls the insertion of new elements
-function insertElement(newElement) {
+function insertElement(newElement,id) {
     let nodes = Array.from(content.childNodes);
     if (currentIndex + 1 == content.childNodes.length) {
         content.appendChild(newElement);
+        //newElement.focus();
+        //newElement.click();
+        $( `#${id}`).trigger( "click" );
     } else {
         console.log('Current Index from insert element: ', currentIndex);
         nodes.splice(currentIndex + 1, 0, newElement);
@@ -256,8 +263,6 @@ function renderElements(arr, newElement) {
         content.innerHTML += dialog.outerHTML;
     });
 };
-
-
 
 function searchText(action){
     let text = document.getElementById('searchBar').value;
@@ -469,8 +474,10 @@ ipcRenderer.on('switch-scripts', (e, args) => {
     counter = file.counter;
     currentIndex = file.dialogs.length - 2;
     if (args.cScript!= '') {
+        document.getElementById("script-title").style.color = '#1ed760';
         document.getElementById(args.cScript).style.color = '#1ed760';
     }
+    unsavedChanges = 0;
 });
 
 ipcRenderer.on('saved', (e, args) => {
@@ -499,18 +506,20 @@ ipcRenderer.on('paste',(e,args)=>{
     let secondHalf = [];
     let newContent = [];
     if(currentIndex >= contentNodes.length-1){
-        let firstHalf = contentNodes.slice(0,currentIndex=1);
-        newContent = firstHalf.concat(clipboard);
+        //let firstHalf = contentNodes.slice(0,currentIndex=1);
+        newContent = contentNodes.concat(clipboard);
     }else{
-        firstHalf = contentNodes.slice(0,currentIndex);
-        secondHalf = contentNodes.slice(currentIndex,contentNodes.length);
+        firstHalf = contentNodes.slice(0,currentIndex+1);
+        secondHalf = contentNodes.slice(currentIndex+1,contentNodes.length);
         newContent = firstHalf.concat(clipboard);
+        console.log('First join',newContent);
         newContent = newContent.concat(secondHalf);
+        console.log('Second join', newContent);
     }
     console.log('New content', newContent);
     console.log('Clipboard',clipboard);
     clipboard = [];
-    //renderElements(newContent,'hi');
+    renderElements(newContent,'hi');
 });
 
 //Custom made cut,copy operation to prevent redundancy
@@ -530,6 +539,7 @@ ipcRenderer.on('get-selection',(e,args)=>{
         console.log('last node',lastNodeId);
     };
     if(args == 'copy'){
+        clipboard = [];//Cleaning the clipboard
         for (index = firstNodeId; index <= lastNodeId; index++){
             let newElement = document.createElement("DIV");
             let id = Math.floor((Math.random() * 1000000) + 10000);
@@ -548,14 +558,15 @@ ipcRenderer.on('get-selection',(e,args)=>{
         clipboard = selection;
         console.log('Id',selection[0].attributes);
     }else if(args == 'cut'){
+        clipboard = []; //Cleaning clipboard
         selection = contentNodes.slice(firstNodeId,lastNodeId+1);
         let firstHalf = contentNodes.slice(0,firstNodeId);
         let secondHalf = contentNodes.slice(lastNodeId+1,contentNodes.length);
         let newContents = firstHalf.concat(secondHalf);
-        clipboard = newContents
+        clipboard = selection;
         console.log('New Contents', newContents);
         console.log('Selection to cut...',selection);
-        //renderElements(newContents,'hi');
+        renderElements(newContents,'hi');
     }else{
         console.log('Begin node index',firstNodeId);
         console.log('End node index', lastNodeId);
@@ -578,9 +589,32 @@ document.getElementById('content').onclick = e => { // alerting system that file
     title.style.color = "black";
 };
 
+//Specific keyboard events that are not keybindings
+document.getElementById('content').onkeyup = e =>{
+    e.preventDefault;
+    let keyCode = e.key;
+    let currentElementClass = '';
+    //console.log('Key code',keyCode);
+    //console.log('Key event...',e);
+    //console.log('Key code: ',keyCode.keyCode);
+    /*if(keyCode == 13 && currentElementClass == 'character'){
+        newElement('dialog');
+    };
+    switch(keyCode){
+        case 'Enter':
+            console.log('adding text node ...');
+            newElement('text');
+            break;
+        case 16:
+            console.log('Shift');
+            break;
+    };*/
+};
+
 document.getElementById('print').addEventListener('click', (e) => {
     let scenes = document.getElementsByClassName('scene');
     document.getElementById('scripts').style.visibility = 'hidden';
+    document.getElementById('info').style.visibility = 'hidden';
     for (let i = 0; i < scenes.length; i++) {
         scenes[i].style.visibility = 'hidden';
     };
