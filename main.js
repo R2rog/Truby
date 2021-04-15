@@ -8,7 +8,7 @@ const fs = require('fs');
 const { app, BrowserWindow, Menu, ipcMain } = electron;
 
 //Instances
-process.env.NODE_ENV = 'proudction';
+process.env.NODE_ENV = undefined;
 
 let mainWindow;
 let addWindow;

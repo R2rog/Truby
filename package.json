@@ -15,7 +15,6 @@
   "author": "R2rog <sirR2rog@gmail.com>",
   "dependencies": {
     "electron-store": "^7.0.1",
-    "electron-sudo": "^4.0.12",
     "jquery": "^3.6.0"
   },
   "devDependencies": {

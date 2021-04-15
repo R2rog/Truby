@@ -1,3 +1,8 @@
+@page{
+  size: A4;
+  margin: 0;
+}
+
 :root {
   font-size: 12pt;
   font-family: 'Roboto Mono', monospace;
@@ -25,20 +30,15 @@ body::-webkit-scrollbar-thumb{
   background-color: #F55D3E;
 }
 
-
-/*@media print
-{
-.noprint {display:none;}
-}*/
 @media print{
   body * {
     visibility: hidden;
   }
   .print-content, .print-content * {
-    visibility: visible;
     padding: 0;
+    visibility: visible;
   }
-}
+};
 
 .mystyle{
     font-family: 'Courier Prime', monospace;
@@ -321,7 +321,6 @@ button:hover{
     transform: scale(1.0);
 }
 
-
 /*Toolvbar style*/
 #toolbar{
   font-family:'Roboto Mono', monospace ;
@@ -391,6 +390,8 @@ button:hover{
     margin-top: 10px;
     margin-left: 35%;
     text-justify: inter-word;
+    break-inside: avoid;
+    user-select: inherit;
 }
 .character:empty::before{
   content:attr(data-placeholder);
@@ -403,6 +404,8 @@ button:hover{
   margin-top: 5px;
   margin-left: 28%;
   text-justify: inter-word;
+  break-inside: avoid;
+  user-select: inherit;
 }
 .parenthesis:empty::before{
   content:attr(data-placeholder);
@@ -416,6 +419,8 @@ button:hover{
   margin-left: 20%;
   margin-right: 20%;
   text-justify: inter-word;
+  break-inside: avoid;
+  user-select: inherit;
 }
 .dialog:empty::before{
   content:attr(data-placeholder);
@@ -428,6 +433,8 @@ button:hover{
     background-color: rgb(211, 211, 211);
     width: 100%;
     margin-top: 10px;
+    break-inside: avoid;
+    user-select: inherit;
 }
 .location:empty::before{
   content:attr(data-placeholder);
@@ -438,6 +445,8 @@ button:hover{
     /*background-color: rgb(248, 232, 85);*/
     width: 100%;
     margin-top: 10px;
+    break-inside: avoid;
+    user-select: inherit;
 }
 .text:empty::before{
   content:attr(data-placeholder);
@@ -450,6 +459,8 @@ button:hover{
     /*background-color: lightslategray;*/
     margin-top: 10px;
     width: 100%;
+    break-inside: avoid;
+    user-select: inherit;
 }
 .transition:empty::before{
   content:attr(data-placeholder);
@@ -465,6 +476,8 @@ button:hover{
   /*background-color:#F55D3E;*/
   margin-top: 10px;
   width: 100%;
+  break-inside: avoid;
+  user-select: inherit;
 }
 .scene:empty::before{
 content:attr(data-placeholder);
@@ -676,27 +689,6 @@ color:black;
   .accordion-content {
     display: none;
 }
-
-/*.accordion-toggle a:before, .accordion-toggle a:after {
-    content: '';
-    display: block;
-    position: absolute;
-    top: 50%;
-    right: 30px;
-    width: 15px;
-    height: 2px;
-    margin-top: -1px;
-    background-color: #F55D3E;
-    transform-origin: 50% 50%;
-    transition: all 0.3s ease-out;
-}
-
-
-.accordion-toggle a:before {
-    transform: rotate(-90deg);
-    opacity: 1;
-    z-index: 2;
-}*/
 
 .accordion-toggle.active-tab {
   background: #F55D3E;

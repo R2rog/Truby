@@ -6,6 +6,7 @@ const Store = require('electron-store');
 const  $ = require('jquery');
 const os = require('os');
 const jQuery = require('jquery');
+
 //Object instances
 const store = new Store();
 
@@ -14,18 +15,16 @@ const content = document.getElementById('content');
 let directory = './data';
 let filenames = 'fs.readdirSync(directory)';
 let script = ''; //Current selected script.
+let previousElClass = '';
 let currentIndex = 0; //Gives the position of the selected element on the NodeList
 let counter = 0; //Gives a unique key to every new element added
-let classes = ['text', 'character', 'dialog', 'location', 'transition','parenthesis','scene'];
 let scale = 1.0; //Controls the scale for the content aspect of the page.
 let margin = 81; //Initial margin
 let unsavedChanges = 0;
-let expecingPaste = 0;
+let classes = ['character','text', 'dialog','parenthesis', 'location', 'transition','scene'];
 let clipboard = [];
 let selectedScripts = [];
 let shortcuts = [];
-
-//TODO: Get the class of the current element so the 
 
 //Function that executes at the same time that the app launches
 async function mainProcess(){
@@ -37,8 +36,6 @@ async function mainProcess(){
 async function getTitles() {
     let titles = await store.get('Titles');
     let menu = document.getElementById('menu');
-    //console.log('Titles: ',titles);
-    //TODO: Split this method into two
     if(titles == undefined){
         titles = await store.set('Titles', []);
     }else{
@@ -133,7 +130,7 @@ async function checkProcess() {
             "arenthesis (Cmd+E)",
             "ransition (Cmd+T)",
             "arker (Cmd+0)",
-            "Change element(Cmd+4)",
+            "Change element Tab",
             "Zoom In (Cmd+I)",
             "Zoom Out (Cmd+O)"
         ];
@@ -211,12 +208,50 @@ function displayScenes(){
     });
 };
 
+//Displays the selected script in the page when the tittle is clicked.
+function displayContent(el, div, i1, i2, i3, filepath, filename) {
+    el.addEventListener('click', (e) => {
+        let elemID = filename.split(" ").join("");
+        if (script != '') {
+            document.getElementById(script.split(" ").join("") + 'i1').style.display = 'none';
+            document.getElementById(script.split(" ").join("") + 'i2').style.display = 'none';
+            document.getElementById(script.split(" ").join("")+ 'i3').style.display = 'none';
+            document.getElementById('accordion'+script.split(" ").join("")).style = '#111';
+            let dialogs = [];
+            let arr = content.childNodes;
+            arr.forEach(element => {
+                dialogs.push(element.outerHTML);
+            });
+            ipcRenderer.send('switch-scripts', {
+                selectedScript: filename,
+                currentScript: script,
+                dialogs: dialogs,
+                counter: counter
+            });
+        } else {
+            ipcRenderer.send('switch-scripts', {
+                selectedScript: filename,
+                currentScript: ''
+            });
+            document.getElementById('div'+elemID).style.backgroundColor = '#F55D3E;';
+        };
+        script = el.innerHTML;
+        document.getElementById('script-title').innerHTML = script;
+        document.getElementById('accordion'+elemID).style.backgroundColor = '#F55D3E';
+        i1.style.display = 'block';
+        i2.style.display = 'block';
+        i3.style.display = 'block';
+    });
+};
+
 //Function that gets the id of the current element.
 function currentElemIndex(id) {
     let el = document.getElementById(id);
+    previousElClass = el.className;
     let arr = content.childNodes;
     currentIndex = Array.prototype.indexOf.call(arr, el);
     console.log('Current index from currentElemIndex: ', currentIndex);
+    console.log('Current class:', previousElClass);
 };
 
 //Function that creates a character html tag
@@ -225,27 +260,24 @@ function newElement(type) {
     counter = counter + 1;
     id = counter.toString();
     getId = "currentElemIndex(" + id + ")";
-    let newElement = document.createElement("SPAN");
+    let newElement = document.createElement("P");
     newElement.setAttribute('class', type);
     newElement.setAttribute('id', id);
-    newElement.setAttribute('tabindex', 0);
+    //newElement.setAttribute('tabindex', 1);
     newElement.setAttribute('data-placeholder', type)
-    //newElement.setAttribute('contentEditable', 'true');
+    newElement.setAttribute('contentEditable', 'true');
     newElement.setAttribute("onclick", getId);
     if (type == 'parenthesis') {
         newElement.innerText = '()';
-    }
+    };
     insertElement(newElement,id);
 };
 
-//Function that controls the insertion of new elements
 function insertElement(newElement,id) {
     let nodes = Array.from(content.childNodes);
     if (currentIndex + 1 == content.childNodes.length) {
-        content.appendChild(newElement);
-        //newElement.focus();
-        //newElement.click();
-        $( `#${id}`).trigger( "click" );
+        //content.appendChild(newElement);
+        content.append(newElement);
     } else {
         console.log('Current Index from insert element: ', currentIndex);
         nodes.splice(currentIndex + 1, 0, newElement);
@@ -256,7 +288,6 @@ function insertElement(newElement,id) {
     }
 };
 
-//Function that adds elements when they are not located in the last position of the Node List.
 function renderElements(arr, newElement) {
     content.innerHTML = "";
     arr.forEach(dialog => {
@@ -264,17 +295,15 @@ function renderElements(arr, newElement) {
     });
 };
 
-function searchText(action){
-    let text = document.getElementById('searchBar').value;
-    switch (action) {
-        case "search":
-            ipcRenderer.send('find-in-page',{text,action});
-            break;
-        case "delete":
-            document.getElementById('search-module').style.visibility = 'hidden';
-            ipcRenderer.send('find-in-page',{text,action});
-            break;
-    };
+//Function that shifts through the different classes for the selected element
+function changeClass() {
+    let el = content.childNodes[currentIndex];
+    let currentClass = el.className;
+    let i = classes.indexOf(currentClass);
+    if (i + 1 >= classes.length) i = -1;
+    el.setAttribute('class', classes[i + 1]);
+    el.setAttribute('data-placeholder',classes[i + 1]);
+    //el.innerText = classes[i+1];
 };
 
 function deleteScript() {
@@ -316,58 +345,22 @@ function changeName() {
 
 };
 
-//Displays the selected script in the page when the tittle is clicked.
-function displayContent(el, div, i1, i2, i3, filepath, filename) {
-    el.addEventListener('click', (e) => {
-        let elemID = filename.split(" ").join("");
-        if (script != '') {
-            document.getElementById(script.split(" ").join("") + 'i1').style.display = 'none';
-            document.getElementById(script.split(" ").join("") + 'i2').style.display = 'none';
-            document.getElementById(script.split(" ").join("")+ 'i3').style.display = 'none';
-            document.getElementById('accordion'+script.split(" ").join("")).style = '#111';
-            //console.log();
-            //document.getElementById('div'+script).style.backgroundColor = '#F55D3E;';
-            let dialogs = [];
-            let arr = content.childNodes;
-            arr.forEach(element => {
-                dialogs.push(element.outerHTML);
-            });
-            ipcRenderer.send('switch-scripts', {
-                selectedScript: filename,
-                currentScript: script,
-                dialogs: dialogs,
-                counter: counter
-            });
-        } else {
-            console.log(filename);
-            ipcRenderer.send('switch-scripts', {
-                selectedScript: filename,
-                currentScript: ''
-            });
-            document.getElementById('div'+elemID).style.backgroundColor = '#F55D3E;';
-        };
-        script = el.innerHTML;
-        document.getElementById('script-title').innerHTML = script;
-        document.getElementById('accordion'+elemID).style.backgroundColor = '#F55D3E';
-        i1.style.display = 'block';
-        i2.style.display = 'block';
-        i3.style.display = 'block';
-    });
-};
-
-//Function that shifts through the different classes for the selected element
-function changeClass() {
-    let el = content.childNodes[currentIndex];
-    let currentClass = el.className;
-    let i = classes.indexOf(currentClass);
-    if (i + 1 >= classes.length) i = -1;
-    el.setAttribute('class', classes[i + 1]);
-    el.innerText = classes[i+1];
-};
-
 //Adding a new file from the main window
 function addDoc() {
     ipcRenderer.send("addDoc", "Adding new doc");
+};
+
+function searchText(action){
+    let text = document.getElementById('searchBar').value;
+    switch (action) {
+        case "search":
+            ipcRenderer.send('find-in-page',{text,action});
+            break;
+        case "delete":
+            document.getElementById('search-module').style.visibility = 'hidden';
+            ipcRenderer.send('find-in-page',{text,action});
+            break;
+    };
 };
 
 function zoom(param) {
@@ -470,7 +463,6 @@ ipcRenderer.on('switch-scripts', (e, args) => {
             i = i+1;
         }
     });
-    console.log('Content', content.childNodes[0]);
     counter = file.counter;
     currentIndex = file.dialogs.length - 2;
     if (args.cScript!= '') {
@@ -499,8 +491,6 @@ ipcRenderer.on('quit', (e, args) => {
 
 //Custom paste function to prevent redundancy
 ipcRenderer.on('paste',(e,args)=>{
-    //expecingPaste = 0;
-    console.log('Current index: ',currentIndex);
     let contentNodes = Array.from(content.childNodes);
     let firstHalf = [];
     let secondHalf = [];
@@ -512,12 +502,8 @@ ipcRenderer.on('paste',(e,args)=>{
         firstHalf = contentNodes.slice(0,currentIndex+1);
         secondHalf = contentNodes.slice(currentIndex+1,contentNodes.length);
         newContent = firstHalf.concat(clipboard);
-        console.log('First join',newContent);
         newContent = newContent.concat(secondHalf);
-        console.log('Second join', newContent);
     }
-    console.log('New content', newContent);
-    console.log('Clipboard',clipboard);
     clipboard = [];
     renderElements(newContent,'hi');
 });
@@ -535,8 +521,6 @@ ipcRenderer.on('get-selection',(e,args)=>{
         tempFirst = firstNodeId;
         firstNodeId = lastNodeId;
         lastNodeId = tempFirst;
-        console.log('first node',firstNodeId);
-        console.log('last node',lastNodeId);
     };
     if(args == 'copy'){
         clipboard = [];//Cleaning the clipboard
@@ -553,10 +537,7 @@ ipcRenderer.on('get-selection',(e,args)=>{
             newElement.setAttribute("onclick", getId);   
             selection.push(newElement);
         }
-        console.log('Selection to copy...', selection);
-        console.log('Content nodes',content.childNodes);
         clipboard = selection;
-        console.log('Id',selection[0].attributes);
     }else if(args == 'cut'){
         clipboard = []; //Cleaning clipboard
         selection = contentNodes.slice(firstNodeId,lastNodeId+1);
@@ -564,8 +545,6 @@ ipcRenderer.on('get-selection',(e,args)=>{
         let secondHalf = contentNodes.slice(lastNodeId+1,contentNodes.length);
         let newContents = firstHalf.concat(secondHalf);
         clipboard = selection;
-        console.log('New Contents', newContents);
-        console.log('Selection to cut...',selection);
         renderElements(newContents,'hi');
     }else{
         console.log('Begin node index',firstNodeId);
@@ -590,25 +569,22 @@ document.getElementById('content').onclick = e => { // alerting system that file
 };
 
 //Specific keyboard events that are not keybindings
-document.getElementById('content').onkeyup = e =>{
-    e.preventDefault;
+document.getElementById('content').onkeydown = e =>{
     let keyCode = e.key;
     let currentElementClass = '';
-    //console.log('Key code',keyCode);
-    //console.log('Key event...',e);
-    //console.log('Key code: ',keyCode.keyCode);
-    /*if(keyCode == 13 && currentElementClass == 'character'){
-        newElement('dialog');
-    };
+    unsavedChanges = 1;
     switch(keyCode){
         case 'Enter':
-            console.log('adding text node ...');
-            newElement('text');
+            e.preventDefault();
+            if(previousElClass == 'character') newElement('dialog');
+            else if(previousElClass == 'dialog') newElement('character');
+            else newElement('text');
             break;
-        case 16:
-            console.log('Shift');
+        case 'Tab':
+            e.preventDefault();
+            changeClass();
             break;
-    };*/
+    };
 };
 
 document.getElementById('print').addEventListener('click', (e) => {
@@ -629,9 +605,9 @@ document.getElementById('print').addEventListener('click', (e) => {
             detail: 'This will ensure that all your progress gets saved',
         });
     } else {
-        content.style.padding = 0;
+        //content.style.padding = 0;
         window.print();
-        document.location.reload();
+        //document.location.reload();
     };
 });
 
