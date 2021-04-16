@@ -144,8 +144,8 @@ async function checkProcess() {
             "ransition (Alt+T)",
             "arker (Alt+0)",
             "Change element(Alt+Z)",
-            "Zoom In (Alt+I)",
-            "Zoom Out (Alt+O)"
+            "Zoom In (Ctrl+I)",
+            "Zoom Out (Ctlr+O)"
         ];
     };
     shortcuts.forEach(shortcut => {
@@ -263,7 +263,7 @@ function newElement(type) {
     let newElement = document.createElement("P");
     newElement.setAttribute('class', type);
     newElement.setAttribute('id', id);
-    //newElement.setAttribute('tabindex', 1);
+    newElement.setAttribute('tabindex', 0);
     newElement.setAttribute('data-placeholder', type)
     newElement.setAttribute('contentEditable', 'true');
     newElement.setAttribute("onclick", getId);
@@ -444,7 +444,7 @@ ipcRenderer.on('request-elements', (e, args) => {
 ipcRenderer.on('switch-scripts', (e, args) => {
     //let prevScript = args.prevScript;
     let file = args.selectedScript;
-    content.style.display = 'block';
+    content.style.display = 'inline-block';
     selectedScripts += 1;
     document.getElementById('img-placeholder').style.display = 'none';
     //Reseting the values for a new file.
@@ -610,5 +610,14 @@ document.getElementById('print').addEventListener('click', (e) => {
         //document.location.reload();
     };
 });
+
+window.onafterprint = (event) => {
+    let scenes = document.getElementsByClassName('scene');
+    document.getElementById('info').style.visibility = 'visible';
+    for (let i = 0; i < scenes.length; i++) {
+        scenes[i].style.visibility = 'visible';
+    };
+    console.log('After print');
+  };
 
 mainProcess();

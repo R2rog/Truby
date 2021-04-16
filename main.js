@@ -596,7 +596,7 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 },
                 {
                     label: 'Parenthesis',
-                    accelerator: 'Alt+Z',
+                    accelerator: 'Alt+E',
                     click() {
                         mainWindow.webContents.send('add-element', 'parenthesis');
                     }

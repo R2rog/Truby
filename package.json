@@ -18,7 +18,7 @@
     "jquery": "^3.6.0"
   },
   "devDependencies": {
-    "electron": "^11.3.0",
+    "electron": "11.3.0",
     "electron-builder": "^22.9.1",
     "electron-notarize": "^1.0.0"
   },
