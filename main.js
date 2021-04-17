@@ -22,7 +22,8 @@ const store = new Store();
 //Listen for the app to be ready
 app.on('ready', function () {
     let iconRoute;
-    process.platform == 'darwin' ? iconRoute = 'build/feather.icns' : iconRoute = nativeImage.createFromPath(__dirname + '/static/images/feather.png')
+    //process.platform == 'darwin' ? iconRoute = 'build/feather.icns' : iconRoute = nativeImage.createFromPath(__dirname + '/static/images/feather.png')
+    process.platform == 'darwin' ? iconRoute = 'build/feather.icns' : iconRoute = nativeImage.createFromPath(__filename+'build/feather_ico.ico');
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 1024,
