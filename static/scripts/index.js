@@ -523,6 +523,7 @@ ipcRenderer.on('get-selection',(e,args)=>{
         lastNodeId = tempFirst;
     };
     if(args == 'copy'){
+        console.log('copy elements');
         clipboard = [];//Cleaning the clipboard
         for (index = firstNodeId; index <= lastNodeId; index++){
             let newElement = document.createElement("DIV");
@@ -539,6 +540,7 @@ ipcRenderer.on('get-selection',(e,args)=>{
         }
         clipboard = selection;
     }else if(args == 'cut'){
+        console.log('cut elements');
         clipboard = []; //Cleaning clipboard
         selection = contentNodes.slice(firstNodeId,lastNodeId+1);
         let firstHalf = contentNodes.slice(0,firstNodeId);

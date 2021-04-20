@@ -5,7 +5,7 @@ const url = require('url');
 const path = require('path');
 const nativeImage = require('electron').nativeImage
 const fs = require('fs');
-const { app, BrowserWindow, Menu, ipcMain } = electron;
+const { app, BrowserWindow, Menu, ipcMain, globalShortcut } = electron;
 
 //Instances
 process.env.NODE_ENV = undefined;
@@ -33,6 +33,18 @@ app.on('ready', function () {
         },
         //icon: iconRoute,
     });
+
+    //Global shortcut to prevent the copy, cut and paste default methods in Windows. 
+    globalShortcut.register('Control+X', ()=>{
+        mainWindow.webContents.send('get-selection','cut');
+    });
+    globalShortcut.register('Control+C', ()=>{
+        mainWindow.webContents.send('get-selection','copy');
+    });
+    globalShortcut.register('Control+V', ()=>{
+        mainWindow.webContents.send('paste');
+    });
+
     mainWindow.setTitle('qwerty');
     //Load main HTML page
     mainWindow.loadURL(url.format({
@@ -526,7 +538,7 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 { 
                     //role: 'paste'
                     label: 'Paste',
-                    accelerator: 'Ctrl+V',
+                    accelerator: 'Alt+V',
                     click(){
                         mainWindow.webContents.send('paste');
                     }
@@ -534,16 +546,18 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 { 
                     //role: 'copy'
                     label:'Copy',
-                    accelerator: 'Ctrl+C',
+                    accelerator: 'Alt+C',
                     click(){
+                        console.log('Copying ...');
                         mainWindow.webContents.send('get-selection','copy');
                     }
                 },
                 { 
                     //role: 'cut' 
                     label: 'Cut',
-                    accelerator: 'Ctrl+X',
+                    accelerator: 'Alt+X',
                     click(){
+                        console.log('Cutting ....');
                         mainWindow.webContents.send('get-selection','cut');
                     }
                 },
