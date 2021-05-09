@@ -67,22 +67,25 @@
     </div>
     <!-- menu-container -->
     <img id="img-placeholder" src="../images/feather.png" alt="Placeholder">
-    <div id="content" class='print-content' media = "print" contenteditable="true"> </div>
+    <div id="content" class='print-content' media = "print" contenteditable="true">
+      <div id="page">
+        <p class="text" id='0' tabindex="0" data-placeholder='text' display='block'></p>
+      </div>
+    </div>
     <div id="toolbar" class="noprint">
-        <div class="tool" id="action" onclick="newElement('text')"><a class="noprint">A</a><span class='tooltiptext'></span></div>
-        <div class="tool" onclick="newElement('character')"><a class="noprint">C</a><span class='tooltiptext'></span></div>
-        <div class="tool" onclick="newElement('dialog')"><a class="noprint">D</a><span class='tooltiptext'></span></div>
-        <div class="tool" onclick="newElement('location')"><a class="noprint">H</a><span class='tooltiptext'></span></div>
-        <div class="tool" onclick="newElement('parenthesis')"><a class="noprint">P</a><span class='tooltiptext'></span></div>
-        <div class="tool" onclick="newElement('transition')"><a class="noprint">T</a><span class='tooltiptext'></span></div>
-        <div class="tool" onclick="newElement('scene')"><a class="noprint">M</a><span class='tooltiptext'></span></div>
-        <div class="tool" onclick="changeClass()"><a class="noprint">-&gt;</a><span class='tooltiptext'></span></div>
-        <div class="tool" onclick="zoom(1)"><a class="noprint">+</a><span class='tooltiptext'></span></div>
-        <div class="tool" onclick="zoom(0)"><a class="noprint">-</a><span class='tooltiptext'></span></div>
+      <div class="tool" id="action" onclick="newElement('text')"><a class="noprint">A</a><span class='tooltiptext'></span></div>
+      <div class="tool" onclick="newElement('character')"><a class="noprint">C</a><span class='tooltiptext'></span></div>
+      <div class="tool" onclick="newElement('dialog')"><a class="noprint">D</a><span class='tooltiptext'></span></div>
+      <div class="tool" onclick="newElement('location')"><a class="noprint">H</a><span class='tooltiptext'></span></div>
+      <div class="tool" onclick="newElement('parenthesis')"><a class="noprint">P</a><span class='tooltiptext'></span></div>
+      <div class="tool" onclick="newElement('transition')"><a class="noprint">T</a><span class='tooltiptext'></span></div>
+      <div class="tool" onclick="newElement('scene')"><a class="noprint">M</a><span class='tooltiptext'></span></div>
+      <div class="tool" onclick="changeClass()"><a class="noprint">-&gt;</a><span class='tooltiptext'></span></div>
+      <div class="tool" onclick="zoom(1)"><a class="noprint">+</a><span class='tooltiptext'></span></div>
+      <div class="tool" onclick="zoom(0)"><a class="noprint">-</a><span class='tooltiptext'></span></div>
     </div>
   </div>
   <script src="../scripts/index.js"></script>
   <div id="credit" class="noprint">Icons made by Freepik from www.flaticon.com</div>
 </body>
-
 </html>

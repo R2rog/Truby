@@ -11,12 +11,13 @@ const jQuery = require('jquery');
 const store = new Store();
 
 // Global variables
-const content = document.getElementById('content');
+//const content = document.getElementById('content');
+const content = document.getElementById('page');
 let directory = './data';
 let filenames = 'fs.readdirSync(directory)';
 let script = ''; //Current selected script.
 let previousElClass = '';
-let currentIndex = 0; //Gives the position of the selected element on the NodeList
+let currentIndex = 0; //Gives the position of the selected element on the NodeList. Not used
 let counter = 0; //Gives a unique key to every new element added
 let scale = 1.0; //Controls the scale for the content aspect of the page.
 let margin = 81; //Initial margin
@@ -25,6 +26,8 @@ let classes = ['character','text', 'dialog','parenthesis', 'location', 'transiti
 let clipboard = [];
 let selectedScripts = [];
 let shortcuts = [];
+let currentElId = 0;
+let noBreak = false;
 
 //Function that executes at the same time that the app launches
 async function mainProcess(){
@@ -180,6 +183,21 @@ $(function() {
     });
   });
 
+function insertFirst(type){
+    counter = counter + 1;
+    id = counter.toString();
+    getId = "currentElemIndex(" + id + ")";
+    let newElement = document.createElement("P");
+    newElement.setAttribute('class', type);
+    newElement.setAttribute('id',id);
+    newElement.setAttribute('tabindex', 0);
+    newElement.setAttribute('data-placeholder', type);
+    newElement.setAttribute('display','block');
+    newElement.setAttribute("onclick", getId);
+    console.log('insertFirst',newElement);
+    content.append(newElement);
+}
+
 //Searches and displays all the scenes inside the document.
 function displayScenes(){
     let nodes = Array.from(content.childNodes);
@@ -246,17 +264,16 @@ function displayContent(el, div, i1, i2, i3, filepath, filename) {
 
 //Function that gets the id of the current element.
 function currentElemIndex(id) {
-    let el = document.getElementById(id);
+    /*let el = document.getElementById(id);
     previousElClass = el.className;
     let arr = content.childNodes;
-    currentIndex = Array.prototype.indexOf.call(arr, el);
-    console.log('Current index from currentElemIndex: ', currentIndex);
-    console.log('Current class:', previousElClass);
+    currentIndex = Array.prototype.indexOf.call(arr, el);*/
+    currentElId = id;
+    console.log('Clicked el id', currentElId);
 };
 
 //Function that creates a character html tag
 function newElement(type) {
-    console.log("Current counter: ", counter);
     counter = counter + 1;
     id = counter.toString();
     getId = "currentElemIndex(" + id + ")";
@@ -265,27 +282,37 @@ function newElement(type) {
     newElement.setAttribute('id', id);
     newElement.setAttribute('tabindex', 0);
     newElement.setAttribute('data-placeholder', type)
-    newElement.setAttribute('contentEditable', 'true');
+    newElement.setAttribute('display','block');
     newElement.setAttribute("onclick", getId);
     if (type == 'parenthesis') {
         newElement.innerText = '()';
     };
-    insertElement(newElement,id);
+    insertElement(newElement,id,type);
 };
 
-function insertElement(newElement,id) {
-    let nodes = Array.from(content.childNodes);
-    if (currentIndex + 1 == content.childNodes.length) {
-        //content.appendChild(newElement);
-        content.append(newElement);
-    } else {
-        console.log('Current Index from insert element: ', currentIndex);
-        nodes.splice(currentIndex + 1, 0, newElement);
-        renderElements(nodes, newElement);
-    }
+function insertElement(newElement,id,type) {
+    /*let currentEl = document.getElementById(currentElId);
+    currentEl.insertAdjacentElement('afterend',newElement);
     if (currentIndex != 0) {
         currentIndex += currentIndex + 1;
-    }
+    };
+    newElement.click();*/
+    console.log('Current el id:', currentElId);
+    content.focus();
+    let currentEl = document.getElementById(currentElId);
+    if (currentEl == null) {
+        insertFirst(type);
+    } else {
+        currentEl.insertAdjacentElement('afterend',newElement);
+        let range = new Range();
+        let sel = window.getSelection();
+        range.setStartBefore(newElement);
+        range.isCollapsed = true;
+        sel.removeAllRanges();
+        sel.addRange(range);
+        currentElId = newElement.id;
+        console.log('New current el id',currentElId);
+    };
 };
 
 function renderElements(arr, newElement) {
@@ -303,7 +330,6 @@ function changeClass() {
     if (i + 1 >= classes.length) i = -1;
     el.setAttribute('class', classes[i + 1]);
     el.setAttribute('data-placeholder',classes[i + 1]);
-    //el.innerText = classes[i+1];
 };
 
 function deleteScript() {
@@ -365,15 +391,16 @@ function searchText(action){
 
 function zoom(param) {
     let toolbar = document.getElementById('toolbar');
+    let zoomContent = document.getElementById('content');
     if (param == 0 && scale >= 0.9) {
         scale -= 0.1;
         margin -= 3;
-        content.style.transform = `scale(${scale})`;
+        zoomContent.style.transform = `scale(${scale})`;
         toolbar.style.marginLeft = `${margin}%`;
     } else if (param == 1 && scale <= 1.5) {
         scale += 0.1;
         margin += 3;
-        content.style.transform = `scale(${scale})`;
+        zoomContent.style.transform = `scale(${scale})`;
         toolbar.style.marginLeft = `${margin}%`;
     } else {
         scale = scale;
@@ -444,7 +471,8 @@ ipcRenderer.on('request-elements', (e, args) => {
 ipcRenderer.on('switch-scripts', (e, args) => {
     //let prevScript = args.prevScript;
     let file = args.selectedScript;
-    content.style.display = 'inline-block';
+    //content.style.display = 'inline-block';TODO: Uncomment this line after experimentation
+    document.getElementById('content').style.display = 'inline-block';
     selectedScripts += 1;
     document.getElementById('img-placeholder').style.display = 'none';
     //Reseting the values for a new file.
@@ -473,7 +501,6 @@ ipcRenderer.on('switch-scripts', (e, args) => {
 });
 
 ipcRenderer.on('saved', (e, args) => {
-    //window.confirm(args);
     let title = document.getElementById(script);
     document.getElementById('script-title').style.color = '#1ed760';
     title.style.color = '#1ed760';
@@ -492,11 +519,13 @@ ipcRenderer.on('quit', (e, args) => {
 //Custom paste function to prevent redundancy
 ipcRenderer.on('paste',(e,args)=>{
     let contentNodes = Array.from(content.childNodes);
+    let el = document.getElementById(currentElId);
+    currentIndex = Array.prototype.indexOf.call(contentNodes, el);
+    console.log('paste in current index',currentIndex);
     let firstHalf = [];
     let secondHalf = [];
     let newContent = [];
     if(currentIndex >= contentNodes.length-1){
-        //let firstHalf = contentNodes.slice(0,currentIndex=1);
         newContent = contentNodes.concat(clipboard);
     }else{
         firstHalf = contentNodes.slice(0,currentIndex+1);
@@ -504,7 +533,7 @@ ipcRenderer.on('paste',(e,args)=>{
         newContent = firstHalf.concat(clipboard);
         newContent = newContent.concat(secondHalf);
     }
-    clipboard = [];
+    //clipboard = [];
     renderElements(newContent,'hi');
 });
 
@@ -522,6 +551,7 @@ ipcRenderer.on('get-selection',(e,args)=>{
         firstNodeId = lastNodeId;
         lastNodeId = tempFirst;
     };
+    clipboard = [];
     if(args == 'copy'){
         console.log('copy elements');
         clipboard = [];//Cleaning the clipboard
@@ -559,28 +589,31 @@ ipcRenderer.on('show-new-item', (e, args) => {
 });
 
 //Function that detects changes on the document. 
-document.getElementById('content').onclick = e => { // alerting system that files have been updated
-    unsavedChanges = 1;
-    ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
-        content: 1,
-        scripts: selectedScripts
-    });
-    let title = document.getElementById(script);
-    document.getElementById('script-title').style.color = 'red';
-    title.style.color = "black";
-};
+document.getElementById('content').addEventListener('keyup', e =>{
+    if(e.keyCode != 91 || e.ctrlKey){ //Escaping ctr/cmd keyboard events
+        unsavedChanges = 1;
+        ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
+            content: 1,
+            scripts: selectedScripts
+        });
+        let title = document.getElementById(script);
+        document.getElementById('script-title').style.color = 'red';
+        title.style.color = "black";
+    };
+});
 
 //Specific keyboard events that are not keybindings
-document.getElementById('content').onkeydown = e =>{
+document.getElementById('page').onkeydown = e =>{
     let keyCode = e.key;
     let currentElementClass = '';
     unsavedChanges = 1;
-    switch(keyCode){
+     switch(keyCode){ 
         case 'Enter':
-            e.preventDefault();
+           e.preventDefault();
             if(previousElClass == 'character') newElement('dialog');
             else if(previousElClass == 'dialog') newElement('character');
             else newElement('text');
+            console.log('enter');
             break;
         case 'Tab':
             e.preventDefault();
@@ -607,14 +640,13 @@ document.getElementById('print').addEventListener('click', (e) => {
             detail: 'This will ensure that all your progress gets saved',
         });
     } else {
-        //content.style.padding = 0;
         window.print();
-        //document.location.reload();
     };
 });
 
 window.onafterprint = (event) => {
     let scenes = document.getElementsByClassName('scene');
+    //content.style.padding = 0;
     document.getElementById('info').style.visibility = 'visible';
     for (let i = 0; i < scenes.length; i++) {
         scenes[i].style.visibility = 'visible';
