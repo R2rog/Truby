@@ -8,7 +8,7 @@ const fs = require('fs');
 const { app, BrowserWindow, Menu, ipcMain, globalShortcut } = electron;
 
 //Instances
-process.env.NODE_ENV = undefined;
+process.env.NODE_ENV =undefined;
 
 let mainWindow;
 let addWindow;
@@ -219,7 +219,7 @@ ipcMain.on('newDoc', (e, title) => {
             mainWindow.webContents.send('show-new-item');
         }
     });*/
-    store.set(title, { "dialogs": [], "characters": [], "locations": [], "counter": 0 });
+    store.set(title, { "dialogs": [ "<div class='text' id='0' display='block' data-placeholder='type' onclick='currentElemIndex('0)'></div>"], "characters": [], "locations": [], "counter": 0 });
     //workingTitles = store.get('Titles.titles');
     let workingTitles = store.get('Titles');
     workingTitles.push(title);

@@ -30,9 +30,17 @@
       <div id="menu-wrapper">
         <div id="hamburger-menu"><span></span><span></span><span></span></div>
         <a  id="scripts">Scripts</a>
-        <i id= "info" class="fas fa-info-circle"><span class='tooltiptext1'>Add markers to navigate the script in a faster way. Markers get display by clicking in the arrow.</span></i>
+        <i id= "info" class="fas fa-info-circle"><span class='tooltiptext1'>Add markers to navigate the script in a faster way. Markers get display by clicking in the arrow. Move through markers with Tab</span></i>
         <!-- hamburger-menu -->
       </div>
+      <div>
+        <p href="" style="color:white; margin-left: 2rem;">No breaks</p>
+      </div>
+      <label class="switch">
+        <input id='mode' type="checkbox">
+        <span class="slider round"></span>
+      </label>
+      <i class="fas fa-question" id="fa-question"><span class='tooltiptext1'>No breaks mode allows you to write without worrying about fromat. Just press enter and qwerty will do the rest.</span></i>
       <div id="title">
         <span id="script-title" class="noprint">qwerty</span>
       </div>
@@ -66,7 +74,7 @@
       <!-- menu-list accordion-->
     </div>
     <!-- menu-container -->
-    <img id="img-placeholder" src="../images/feather.png" alt="Placeholder">
+    <img id="img-placeholder" src="../images/feather1.png" alt="Placeholder">
     <div id="content" class='print-content' media = "print" contenteditable="true">
       <div id="page">
         <p class="text" id='0' tabindex="0" data-placeholder='text' display='block'></p>
@@ -85,7 +93,9 @@
       <div class="tool" onclick="zoom(0)"><a class="noprint">-</a><span class='tooltiptext'></span></div>
     </div>
   </div>
-  <script src="../scripts/index.js"></script>
+  <label for="update" id='update-label' style="color: aquamarine;">Looking for updates:</label>
+  <progress id="update" value="0" max="100"></progress> 
   <div id="credit" class="noprint">Icons made by Freepik from www.flaticon.com</div>
+  <script src="../scripts/index.js"></script>
 </body>
 </html>

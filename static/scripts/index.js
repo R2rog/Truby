@@ -6,10 +6,49 @@ const Store = require('electron-store');
 const  $ = require('jquery');
 const os = require('os');
 const jQuery = require('jquery');
+const uaup = require('uaup-js');//Module that checks for updates via Git Releases
 
 //Object instances
 const store = new Store();
-
+const defaultStages = {
+    Checking: "Checking For Updates!", // When Checking For Updates.
+    Found: "Update Found!",  // If an Update is Found.
+    NotFound: "No Update Found.", // If an Update is Not Found.
+    Downloading: "Downloading...", // When Downloading Update.
+    Unzipping: "Installing...", // When Unzipping the Archive into the Application Directory.
+    Cleaning: "Finalizing...", // When Removing Temp Directories and Files (ex: update archive and tmp directory).
+    Launch: "Launching..." // When Launching the Application.
+};
+const WinUpdateOptions = {
+    useGithub: true, // {Default is true} [Optional] Only Github is Currenlty Supported.
+    gitRepo: "Truby", // [Required] Your Repo Name
+    gitUsername: "R2rog",  // [Required] Your GitHub Username.
+    appName: "qwerty", //[Required] The Name of the app archive and the app folder.
+    appExecutableName: "qwerty.exe", //[Required] The Executable of the Application to be Run after updating.
+    progressBar: document.getElementById('update'), // {Default is null} [Optional] If Using Electron with a HTML Progressbar, use that element here, otherwise ignore
+    label: document.getElementById('update-label'), // {Default is null} [Optional] If Using Electron, this will be the area where we put status updates using InnerHTML
+    stageTitles: defaultStages, // {Default is defaultStages} [Optional] Sets the Status Title for Each Stage
+};
+const MacUpdateOptions = {
+    useGithub: true, // {Default is true} [Optional] Only Github is Currenlty Supported.
+    gitRepo: "Truby", // [Required] Your Repo Name
+    gitUsername: "R2rog",  // [Required] Your GitHub Username.
+    appName: "qwerty", //[Required] The Name of the app archive and the app folder.
+    appExecutableName: "qwerty.dmg", //[Required] The Executable of the Application to be Run after updating.
+    progressBar: document.getElementById('update'), // {Default is null} [Optional] If Using Electron with a HTML Progressbar, use that element here, otherwise ignore
+    label: document.getElementById('update-label'), // {Default is null} [Optional] If Using Electron, this will be the area where we put status updates using InnerHTML
+    stageTitles: defaultStages, // {Default is defaultStages} [Optional] Sets the Status Title for Each Stage
+};
+const LinuxUpdateOptions = {
+    useGithub: true, // {Default is true} [Optional] Only Github is Currenlty Supported.
+    gitRepo: "Truby", // [Required] Your Repo Name
+    gitUsername: "R2rog",  // [Required] Your GitHub Username.
+    appName: "qwerty", //[Required] The Name of the app archive and the app folder.
+    appExecutableName: "qwerty.tgz", //[Required] The Executable of the Application to be Run after updating.
+    progressBar: document.getElementById('update'), // {Default is null} [Optional] If Using Electron with a HTML Progressbar, use that element here, otherwise ignore
+    label: document.getElementById('update-label'), // {Default is null} [Optional] If Using Electron, this will be the area where we put status updates using InnerHTML
+    stageTitles: defaultStages, // {Default is defaultStages} [Optional] Sets the Status Title for Each Stage
+};
 // Global variables
 //const content = document.getElementById('content');
 const content = document.getElementById('page');
@@ -17,8 +56,9 @@ let directory = './data';
 let filenames = 'fs.readdirSync(directory)';
 let script = ''; //Current selected script.
 let previousElClass = '';
+let previousEl = null;
 let currentIndex = 0; //Gives the position of the selected element on the NodeList. Not used
-let counter = 0; //Gives a unique key to every new element added
+let counter = 1; //Gives a unique key to every new element added
 let scale = 1.0; //Controls the scale for the content aspect of the page.
 let margin = 81; //Initial margin
 let unsavedChanges = 0;
@@ -27,12 +67,13 @@ let clipboard = [];
 let selectedScripts = [];
 let shortcuts = [];
 let currentElId = 0;
-let noBreak = false;
+let noBreak = true;
 
 //Function that executes at the same time that the app launches
 async function mainProcess(){
     await getTitles();
     await checkProcess();
+    await checkUpdates();
 };
 
 //Async function that gets the titles
@@ -133,7 +174,7 @@ async function checkProcess() {
             "arenthesis (Cmd+E)",
             "ransition (Cmd+T)",
             "arker (Cmd+0)",
-            "Change element Tab",
+            "Change element (Alt)",
             "Zoom In (Cmd+I)",
             "Zoom Out (Cmd+O)"
         ];
@@ -146,7 +187,7 @@ async function checkProcess() {
             "arenthesis (Alt+E)",
             "ransition (Alt+T)",
             "arker (Alt+0)",
-            "Change element(Alt+Z)",
+            "Change element (Alt)",
             "Zoom In (Ctrl+I)",
             "Zoom Out (Ctlr+O)"
         ];
@@ -158,6 +199,28 @@ async function checkProcess() {
     });
     return toolbar;
 };
+
+/*Checks for upadtes from Git Release
+async function checkUpdates(){
+    let update = uaup.CheckForUpdates(MacUpdateOptions);
+    //let platform = os.platform;
+    if(update){
+        switch (process.platform) {
+            case 'win32':
+                uaup.Update(WinUpdateOptions);
+                break;
+            case 'darwin':
+                uaup.Update(MacUpdateOptions);
+                break;
+            case 'linux':
+                uaup.Update(LinuxUpdateOptions);
+                break;
+        };
+        
+    };
+    console.log('Update', update);
+    return false;
+};*/
 
 //Menu handler using jQuery
 $(function() {
@@ -187,16 +250,61 @@ function insertFirst(type){
     counter = counter + 1;
     id = counter.toString();
     getId = "currentElemIndex(" + id + ")";
-    let newElement = document.createElement("P");
+    let newElement = document.createElement("DIV");
     newElement.setAttribute('class', type);
     newElement.setAttribute('id',id);
     newElement.setAttribute('tabindex', 0);
-    newElement.setAttribute('data-placeholder', type);
+    //newElement.setAttribute('data-placeholder', type);
     newElement.setAttribute('display','block');
     newElement.setAttribute("onclick", getId);
     console.log('insertFirst',newElement);
-    content.append(newElement);
-}
+    console.log('previous el',previousEl);
+    if(previousEl == null){
+        content.append(newElement);
+    }else{
+        previousEl.insertAdjacentElement('afterend',newElement);
+    };
+    let range = new Range();
+    let sel = window.getSelection();
+    range.setStartBefore(newElement);
+    range.isCollapsed = true;
+    sel.removeAllRanges();
+    sel.addRange(range);
+    currentElId = newElement.id;
+};
+
+function noBreakFunc(){//Function that gives style to the script without the user input.
+    let el = document.getElementById(currentElId);
+    console.log('Current el',el);
+    console.log('Previous el class:',previousElClass);
+    let text = el.innerText;
+    let transitions = ['FADE', 'FADE', 'CUT ', 'DISS','fade','cut ','diss'];
+    let heathers = ['INT.','EXT.','INT ','EXT ', 'int.', 'ext.', 'ext ','int '];
+    let subText = text.substr(0,4);
+    if(text[0]=='!'){
+        el.setAttribute('class','scene');
+        el.setAttribute('tabindex', 0);
+    }else if(text[0]== '('){
+        el.setAttribute('class','parenthesis');
+    }else if (heathers.includes(subText)){
+        el.setAttribute('class','location');
+    }else if(transitions.includes(subText)){
+        el.setAttribute('class','transition');
+    }else if(previousElClass == 'character'||previousElClass == 'parenthesis'){
+        el.setAttribute('class','dialog');
+    }else if(countWords(text)<=2){
+        el.setAttribute('class','character');
+    }else{
+        el.setAttribute('class','text');
+    };
+};
+
+function countWords(text) {
+    text = text.replace(/(^\s*)|(\s*$)/gi,"");
+    text = text.replace(/[ ]{2,}/gi," ");
+    text = text.replace(/\n /,"\n");
+    return text.split(' ').length;
+ }
 
 //Searches and displays all the scenes inside the document.
 function displayScenes(){
@@ -264,10 +372,12 @@ function displayContent(el, div, i1, i2, i3, filepath, filename) {
 
 //Function that gets the id of the current element.
 function currentElemIndex(id) {
-    /*let el = document.getElementById(id);
-    previousElClass = el.className;
+    /*
     let arr = content.childNodes;
     currentIndex = Array.prototype.indexOf.call(arr, el);*/
+    let currentEl = document.getElementById(id);
+    preiviousEl = currentEl;
+    previousElClass = currentEl.className;
     currentElId = id;
     console.log('Clicked el id', currentElId);
 };
@@ -277,32 +387,32 @@ function newElement(type) {
     counter = counter + 1;
     id = counter.toString();
     getId = "currentElemIndex(" + id + ")";
-    let newElement = document.createElement("P");
+    let newElement = document.createElement('DIV');
     newElement.setAttribute('class', type);
     newElement.setAttribute('id', id);
-    newElement.setAttribute('tabindex', 0);
-    newElement.setAttribute('data-placeholder', type)
+    newElement.setAttribute('data-placeholder', 'type');
     newElement.setAttribute('display','block');
     newElement.setAttribute("onclick", getId);
-    if (type == 'parenthesis') {
-        newElement.innerText = '()';
+    switch(type){
+        case 'parenthesis':
+            newElement.innerText = '(';
+            break;
+        case 'scene':
+            newElement.setAttribute('tabindex', 0);
+            break;
     };
     insertElement(newElement,id,type);
 };
 
 function insertElement(newElement,id,type) {
-    /*let currentEl = document.getElementById(currentElId);
-    currentEl.insertAdjacentElement('afterend',newElement);
-    if (currentIndex != 0) {
-        currentIndex += currentIndex + 1;
-    };
-    newElement.click();*/
     console.log('Current el id:', currentElId);
     content.focus();
     let currentEl = document.getElementById(currentElId);
     if (currentEl == null) {
         insertFirst(type);
     } else {
+        previousEl = currentEl;
+        previousElClass = currentEl.className;
         currentEl.insertAdjacentElement('afterend',newElement);
         let range = new Range();
         let sel = window.getSelection();
@@ -311,7 +421,8 @@ function insertElement(newElement,id,type) {
         sel.removeAllRanges();
         sel.addRange(range);
         currentElId = newElement.id;
-        console.log('New current el id',currentElId);
+        console.log('New element',newElement);
+        console.log('previous el',previousEl);
     };
 };
 
@@ -324,12 +435,13 @@ function renderElements(arr, newElement) {
 
 //Function that shifts through the different classes for the selected element
 function changeClass() {
-    let el = content.childNodes[currentIndex];
+    let el = document.getElementById(currentElId);
     let currentClass = el.className;
     let i = classes.indexOf(currentClass);
     if (i + 1 >= classes.length) i = -1;
     el.setAttribute('class', classes[i + 1]);
     el.setAttribute('data-placeholder',classes[i + 1]);
+    console.log('Class getting changed');
 };
 
 function deleteScript() {
@@ -339,7 +451,7 @@ function deleteScript() {
         defaultId: 0,
         title: 'Confirmation required',
         message: `Are you sure you want to delete ${script}?`,
-        icon: nativeImage.createFromPath('./static/images/feather.png'),
+        icon: nativeImage.createFromPath('./static/images/feather1.png'),
         detail: 'The script will be completley removed from the internal file system',
     }).then(box => {
         if (box.response == 0) {
@@ -362,7 +474,7 @@ function changeName() {
             defaultId: 0,
             title: 'Unsaved changes',
             message: `Please save the current script before creating a copys`,
-            icon: nativeImage.createFromPath('./static/images/feather.png'),
+            icon: nativeImage.createFromPath('./static/images/feather1.png'),
             detail: 'This will ensure that all your progress gets saved',
         });
     } else {
@@ -502,8 +614,8 @@ ipcRenderer.on('switch-scripts', (e, args) => {
 
 ipcRenderer.on('saved', (e, args) => {
     let title = document.getElementById(script);
-    document.getElementById('script-title').style.color = '#1ed760';
-    title.style.color = '#1ed760';
+    document.getElementById('script-title').style.color = 'aquamarine';
+    title.style.color = 'aquamarine';
     unsavedChanges = 0;
     //script = selectedScript;TODO: Check this call
 });
@@ -589,8 +701,8 @@ ipcRenderer.on('show-new-item', (e, args) => {
 });
 
 //Function that detects changes on the document. 
-document.getElementById('content').addEventListener('keyup', e =>{
-    if(e.keyCode != 91 || e.ctrlKey){ //Escaping ctr/cmd keyboard events
+document.getElementById('content').addEventListener('keypress', e =>{
+    if(e.keyCode != 91 || e.ctrlKey){ //Escaping ctrl/cmd keyboard events
         unsavedChanges = 1;
         ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
             content: 1,
@@ -603,22 +715,35 @@ document.getElementById('content').addEventListener('keyup', e =>{
 });
 
 //Specific keyboard events that are not keybindings
-document.getElementById('page').onkeydown = e =>{
+document.getElementById('content').onkeypress = e =>{
     let keyCode = e.key;
     let currentElementClass = '';
-    unsavedChanges = 1;
-     switch(keyCode){ 
-        case 'Enter':
-           e.preventDefault();
-            if(previousElClass == 'character') newElement('dialog');
-            else if(previousElClass == 'dialog') newElement('character');
-            else newElement('text');
-            console.log('enter');
-            break;
-        case 'Tab':
-            e.preventDefault();
-            changeClass();
-            break;
+    let currentEl = document.getElementById(currentElId);
+    noBreak = document.getElementById('mode').checked;
+    console.log('Keycode',keyCode);
+    if(keyCode=='Enter' && noBreak==true){
+        e.preventDefault();
+        console.log('No breaks');
+        console.log('currentEl class',currentEl.className);
+        noBreakFunc();
+        newElement('neutral');
+        unsavedChanges = 1;
+    }else if(keyCode=='Enter' && noBreak==false){
+        e.preventDefault();
+        if(previousElClass == 'character'||previousElClass == 'parenthesis') newElement('dialog');
+        else if(previousElClass == 'dialog') newElement('character');
+        else newElement('text');
+        console.log('Normal');
+        unsavedChanges = 1;
+    };
+};
+
+document.getElementById('content').onkeyup = e =>{
+    let keyCode = e.key;
+    if(keyCode=='Alt'){
+        e.preventDefault();
+        changeClass();
+        unsavedChanges = 1;
     };
 };
 
@@ -629,6 +754,7 @@ document.getElementById('print').addEventListener('click', (e) => {
     for (let i = 0; i < scenes.length; i++) {
         scenes[i].style.visibility = 'hidden';
     };
+    console.log('Unsaved changes', unsavedChanges);
     if (unsavedChanges == 1) {
         dialog.showMessageBox({
             type: 'question',
@@ -636,7 +762,7 @@ document.getElementById('print').addEventListener('click', (e) => {
             defaultId: 0,
             title: 'Unsaved changes',
             message: `Please save the current script before printing`,
-            icon: nativeImage.createFromPath('./static/images/feather.png'),
+            icon: nativeImage.createFromPath('./static/images/feather1.png'),
             detail: 'This will ensure that all your progress gets saved',
         });
     } else {
