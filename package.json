@@ -16,7 +16,7 @@
   "dependencies": {
     "electron-store": "^7.0.3",
     "jquery": "^3.6.0",
-    "uaup-js": "^0.0.22"
+    "uaup-js": "0.0.22"
   },
   "devDependencies": {
     "electron": "^11.3.0",

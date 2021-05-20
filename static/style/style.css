@@ -26,10 +26,11 @@ body::-webkit-scrollbar-thumb{
   background-color: var(--text-primary);
 }
 
+
 /*-------------------------------------Printing settings----------------------------------*/
 @page{
   size: A4;
-  margin: 0;
+  margin: 3rem 0 3rem 0;
 }
 
 @media print{
@@ -427,6 +428,7 @@ button:hover{
     text-justify: inter-word;
     break-inside: avoid;
     user-select: inherit;
+    position: relative;
 }
 .character:empty::before{
   content:attr(data-placeholder);
@@ -441,6 +443,7 @@ button:hover{
   text-justify: inter-word;
   break-inside: avoid;
   user-select: inherit;
+  position: relative;
 }
 .parenthesis:empty::before{
   content:attr(data-placeholder);
@@ -455,6 +458,7 @@ button:hover{
   text-justify: inter-word;
   break-inside: avoid;
   user-select: inherit;
+  position: relative;
 }
 .dialog:empty::before{
   content:attr(data-placeholder);
@@ -469,6 +473,7 @@ button:hover{
     margin-top: 10px;
     break-inside: avoid;
     user-select: inherit;
+    position: relative;
 }
 .location:empty::before{
   content:attr(data-placeholder);
@@ -495,6 +500,7 @@ button:hover{
     margin-top: 10px;
     break-inside: avoid;
     user-select: inherit;
+    position: relative;
 }
 .text:empty::before{
   content:attr(data-placeholder);
@@ -509,6 +515,7 @@ button:hover{
     width: 100%;
     break-inside: avoid;
     user-select: inherit;
+    position: relative;
 }
 .transition:empty::before{
   content:attr(data-placeholder);
@@ -526,6 +533,7 @@ button:hover{
   width: 100%;
   break-inside: avoid;
   user-select: inherit;
+  position: relative;
 }
 .scene:empty::before{
 content:attr(data-placeholder);

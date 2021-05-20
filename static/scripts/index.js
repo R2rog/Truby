@@ -73,7 +73,7 @@ let noBreak = true;
 async function mainProcess(){
     await getTitles();
     await checkProcess();
-    await checkUpdates();
+    //await checkUpdates();
 };
 
 //Async function that gets the titles
@@ -186,8 +186,8 @@ async function checkProcess() {
             "eather (Alt+W)",
             "arenthesis (Alt+E)",
             "ransition (Alt+T)",
-            "arker (Alt+0)",
-            "Change element (Alt)",
+            "arker (Alt+A)",
+            "Change element (Alt+S)",
             "Zoom In (Ctrl+I)",
             "Zoom Out (Ctlr+O)"
         ];
@@ -646,6 +646,7 @@ ipcRenderer.on('paste',(e,args)=>{
         newContent = newContent.concat(secondHalf);
     }
     //clipboard = [];
+    unsavedChanges == 1;
     renderElements(newContent,'hi');
 });
 
@@ -690,6 +691,7 @@ ipcRenderer.on('get-selection',(e,args)=>{
         let newContents = firstHalf.concat(secondHalf);
         clipboard = selection;
         renderElements(newContents,'hi');
+        unsavedChanges == 1;
     }else{
         console.log('Begin node index',firstNodeId);
         console.log('End node index', lastNodeId);
@@ -702,7 +704,8 @@ ipcRenderer.on('show-new-item', (e, args) => {
 
 //Function that detects changes on the document. 
 document.getElementById('content').addEventListener('keypress', e =>{
-    if(e.keyCode != 91 || e.ctrlKey){ //Escaping ctrl/cmd keyboard events
+    if(e.keyCode != 91 || e.key=='Control'){ //Escaping ctrl/cmd keyboard events
+        console.log('key',e.key);
         unsavedChanges = 1;
         ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
             content: 1,
@@ -740,10 +743,12 @@ document.getElementById('content').onkeypress = e =>{
 
 document.getElementById('content').onkeyup = e =>{
     let keyCode = e.key;
-    if(keyCode=='Alt'){
-        e.preventDefault();
-        changeClass();
-        unsavedChanges = 1;
+    if(process.platform=='darwin'){
+        if(keyCode=='Alt'){
+            e.preventDefault();
+            changeClass();
+            unsavedChanges = 1;
+        };  
     };
 };
 
@@ -768,6 +773,15 @@ document.getElementById('print').addEventListener('click', (e) => {
     } else {
         window.print();
     };
+});
+
+//------------------------------------ Window related events --------------------------------------
+//Method that checks if main window is focused so that the global shortcuts dont intervene with other apps
+window.addEventListener('focus',e =>{
+    ipcRenderer.send('window-focus',1);
+});
+window.addEventListener("blur", e=>{
+    ipcRenderer.send('window-focus',0);
 });
 
 window.onafterprint = (event) => {

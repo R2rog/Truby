@@ -5,6 +5,7 @@ const url = require('url');
 const path = require('path');
 const nativeImage = require('electron').nativeImage
 const fs = require('fs');
+const { ipcRenderer } = require('electron');
 const { app, BrowserWindow, Menu, ipcMain, globalShortcut } = electron;
 
 //Instances
@@ -32,17 +33,6 @@ app.on('ready', function () {
             enableRemoteModule: true,
         },
         //icon: iconRoute,
-    });
-
-    //Global shortcut to prevent the copy, cut and paste default methods in Windows. 
-    globalShortcut.register('Control+X', ()=>{
-        mainWindow.webContents.send('get-selection','cut');
-    });
-    globalShortcut.register('Control+C', ()=>{
-        mainWindow.webContents.send('get-selection','copy');
-    });
-    globalShortcut.register('Control+V', ()=>{
-        mainWindow.webContents.send('paste');
     });
 
     mainWindow.setTitle('qwerty');
@@ -157,6 +147,7 @@ function createAddWindow() {
     });
 }
 
+//Create copy window template
 function changeNameWindow() {
     addWindow = new BrowserWindow({
         width: 300,
@@ -178,7 +169,7 @@ function changeNameWindow() {
     });
 }
 
-//Create a new document template
+//Create a new document window template
 function createDocument() {
     let createDocument = new BrowserWindow({
         width: 300,
@@ -292,7 +283,6 @@ ipcMain.on('find-in-page',async (e,content)=>{
     };
 });
 
-//TODO: Entender como se están guardando los scripts en esta parte para evitar que haya redundancias
 ipcMain.on('switch-scripts', (e, content) => {
     let currentScriptTitle = content.currentScript;
     let selectedScript = ''
@@ -302,6 +292,25 @@ ipcMain.on('switch-scripts', (e, content) => {
     } else {
         selectedScript = content.selectedScript
         getScript(selectedScript, currentScriptTitle);
+    };
+});
+
+ipcMain.on('window-focus', (e,args)=>{
+    if(args){
+        console.log('Activate global shortcuts');
+        //Global shortcut to prevent the copy, cut and paste default methods in Windows. 
+        globalShortcut.register('Control+X', ()=>{
+            mainWindow.webContents.send('get-selection','cut');
+        });
+        globalShortcut.register('Control+C', ()=>{
+            mainWindow.webContents.send('get-selection','copy');
+        });
+        globalShortcut.register('Control+V', ()=>{
+            mainWindow.webContents.send('paste');
+        });
+    }else{
+        console.log('Deactivate global shortcuts');
+        globalShortcut.unregisterAll();
     };
 });
 
@@ -494,21 +503,21 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 },
                 {
                     label: 'Quit',
-                    accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',
+                    accelerator: 'Ctrl+Q',
                     click() {
                         app.quit();
                     }
                 },
                 {
                     label: 'New Script',
-                    accelerator: process.platform == 'darwin' ? 'Command+N' : 'Ctrl+N',
+                    accelerator: 'Ctrl+N',
                     click() {
                         createDocument();
                     }
                 },
                 {
                     label: 'Save Doc',
-                    accelerator: process.platform == 'darwin' ? 'Command+S' : 'Ctrl+S',
+                    accelerator: 'Ctrl+S',
                     click() {
                         console.log('------------------Save Doc Keybind------------------------');
                         saveDoc();
@@ -516,14 +525,14 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 },
                 {
                     label: 'Zoom in',
-                    accelerator: process.platform == 'darwin' ? 'Command+I' : 'Ctrl+I',
+                    accelerator: 'Ctrl+I',
                     click() {
                         mainWindow.webContents.send('zoom', 1);
                     }
                 },
                 {
                     label: 'Zoom out',
-                    accelerator: process.platform == 'darwin' ? 'Command+O' : 'Ctrl+O',
+                    accelerator: 'Ctrl+O',
                     click() {
                         mainWindow.webContents.send('zoom', 0);
                     }
@@ -538,7 +547,7 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 { 
                     //role: 'paste'
                     label: 'Paste',
-                    accelerator: 'Alt+V',
+                    accelerator: 'Ctrl+V',
                     click(){
                         mainWindow.webContents.send('paste');
                     }
@@ -546,7 +555,7 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 { 
                     //role: 'copy'
                     label:'Copy',
-                    accelerator: 'Alt+C',
+                    accelerator: 'Ctrl+C',
                     click(){
                         console.log('Copying ...');
                         mainWindow.webContents.send('get-selection','copy');
@@ -555,7 +564,7 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 { 
                     //role: 'cut' 
                     label: 'Cut',
-                    accelerator: 'Alt+X',
+                    accelerator: 'Ctrl+X',
                     click(){
                         console.log('Cutting ....');
                         mainWindow.webContents.send('get-selection','cut');
@@ -575,14 +584,14 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
             submenu: [
                 {
                     label: 'Character',
-                    accelerator: 'Alt+S',
+                    accelerator: 'Alt+1',
                     click() {
                         mainWindow.webContents.send('add-element', 'character');
                     }
                 },
                 {
                     label: 'Dialog',
-                    accelerator: 'Alt+D',
+                    accelerator: 'Alt+2',
                     click() {
                         mainWindow.webContents.send('add-element', 'dialog');
                         console.log('New Dialog');
@@ -597,7 +606,7 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 },
                 {
                     label: 'Text',
-                    accelerator: 'Alt+A',
+                    accelerator: 'Alt+3',
                     click() {
                         mainWindow.webContents.send('add-element', 'text');
                     }
@@ -618,14 +627,14 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
                 },
                 {
                     label: 'Scene',
-                    accelerator: 'Alt+0',
+                    accelerator: 'Alt+A',
                     click(){
                         mainWindow.webContents.send('add-element','scene');
                     }
                 },
                 {
                     label: 'Shift Element',
-                    accelerator: 'Alt+Q',
+                    accelerator: 'Alt+S',
                     click() {
                         mainWindow.webContents.send('add-element', 'shift');
                     }
