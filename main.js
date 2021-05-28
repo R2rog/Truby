@@ -31,15 +31,12 @@ app.on('ready', function () {
         webPreferences: {
             nodeIntegration: true,
             enableRemoteModule: true,
-            spellcheck: true,
         },
-        //icon: iconRoute,
     });
     
     //Adding spell checker support for all available languages
     let ses = mainWindow.webContents.session;
     const possibleLanguages = ses.availableSpellCheckerLanguages
-    console.log(possibleLanguages);
     ses.setSpellCheckerLanguages(possibleLanguages);
 
     mainWindow.setTitle('qwerty');

@@ -69,6 +69,7 @@ let shortcuts = [];
 let currentElId = 0;
 let noBreak = true;
 
+//---------------------------------------- Asyn functions -------------------------------------------
 //Function that executes at the same time that the app launches
 async function mainProcess(){
     await getTitles();
@@ -180,9 +181,9 @@ async function checkProcess() {
         ];
     }else{
         shortcuts = [
-            "ction (Alt+A)",
-            "haracter (Alt+S)",
-            "ialog (Alt+D)",
+            "ction (Alt+3)",
+            "haracter (Alt+1)",
+            "ialog (Alt+2)",
             "eather (Alt+W)",
             "arenthesis (Alt+E)",
             "ransition (Alt+T)",
@@ -245,66 +246,6 @@ $(function() {
       $("body").toggleClass("overflow-hidden");
     });
   });
-
-function insertFirst(type){
-    counter = counter + 1;
-    id = counter.toString();
-    getId = "currentElemIndex(" + id + ")";
-    let newElement = document.createElement("DIV");
-    newElement.setAttribute('class', type);
-    newElement.setAttribute('id',id);
-    newElement.setAttribute('tabindex', 0);
-    //newElement.setAttribute('data-placeholder', type);
-    newElement.setAttribute('display','block');
-    newElement.setAttribute("onclick", getId);
-    console.log('insertFirst',newElement);
-    console.log('previous el',previousEl);
-    if(previousEl == null){
-        content.append(newElement);
-    }else{
-        previousEl.insertAdjacentElement('afterend',newElement);
-    };
-    let range = new Range();
-    let sel = window.getSelection();
-    range.setStartBefore(newElement);
-    range.isCollapsed = true;
-    sel.removeAllRanges();
-    sel.addRange(range);
-    currentElId = newElement.id;
-};
-
-function noBreakFunc(){//Function that gives style to the script without the user input.
-    let el = document.getElementById(currentElId);
-    console.log('Current el',el);
-    console.log('Previous el class:',previousElClass);
-    let text = el.innerText;
-    let transitions = ['FADE', 'FADE', 'CUT ', 'DISS','fade','cut ','diss'];
-    let heathers = ['INT.','EXT.','INT ','EXT ', 'int.', 'ext.', 'ext ','int '];
-    let subText = text.substr(0,4);
-    if(text[0]=='!'){
-        el.setAttribute('class','scene');
-        el.setAttribute('tabindex', 0);
-    }else if(text[0]== '('){
-        el.setAttribute('class','parenthesis');
-    }else if (heathers.includes(subText)){
-        el.setAttribute('class','location');
-    }else if(transitions.includes(subText)){
-        el.setAttribute('class','transition');
-    }else if(previousElClass == 'character'||previousElClass == 'parenthesis'){
-        el.setAttribute('class','dialog');
-    }else if(countWords(text)<=2){
-        el.setAttribute('class','character');
-    }else{
-        el.setAttribute('class','text');
-    };
-};
-
-function countWords(text) {
-    text = text.replace(/(^\s*)|(\s*$)/gi,"");
-    text = text.replace(/[ ]{2,}/gi," ");
-    text = text.replace(/\n /,"\n");
-    return text.split(' ').length;
- }
 
 //Searches and displays all the scenes inside the document.
 function displayScenes(){
@@ -370,6 +311,7 @@ function displayContent(el, div, i1, i2, i3, filepath, filename) {
     });
 };
 
+//--------------------------------------- Regular mode insertion methods --------------------------------------
 //Function that gets the id of the current element.
 function currentElemIndex(id) {
     /*
@@ -433,6 +375,66 @@ function renderElements(arr, newElement) {
     });
 };
 
+//------------------------------------- No Breaks mode insertion functions -------------------------------------
+function insertFirst(type){
+    counter = counter + 1;
+    id = counter.toString();
+    getId = "currentElemIndex(" + id + ")";
+    let newElement = document.createElement("DIV");
+    newElement.setAttribute('class', type);
+    newElement.setAttribute('id',id);
+    newElement.setAttribute('tabindex', 0);
+    //newElement.setAttribute('data-placeholder', type);
+    newElement.setAttribute('display','block');
+    newElement.setAttribute("onclick", getId);
+    console.log('insertFirst',newElement);
+    console.log('previous el',previousEl);
+    if(previousEl == null){
+        content.append(newElement);
+    }else{
+        previousEl.insertAdjacentElement('afterend',newElement);
+    };
+    let range = new Range();
+    let sel = window.getSelection();
+    range.setStartBefore(newElement);
+    range.isCollapsed = true;
+    sel.removeAllRanges();
+    sel.addRange(range);
+    currentElId = newElement.id;
+};
+
+function noBreakFunc(){//Function that gives style to the script without the user input.
+    let el = document.getElementById(currentElId);
+    console.log('Current el',el);
+    console.log('Previous el class:',previousElClass);
+    let text = el.innerText;
+    let transitions = ['FADE', 'FADE', 'CUT ', 'DISS','fade','cut ','diss'];
+    let heathers = ['INT.','EXT.','INT ','EXT ', 'int.', 'ext.', 'ext ','int '];
+    let subText = text.substr(0,4);
+    if(text[0]=='!'){
+        el.setAttribute('class','scene');
+        el.setAttribute('tabindex', 0);
+    }else if(text[0]== '('){
+        el.setAttribute('class','parenthesis');
+    }else if (heathers.includes(subText)){
+        el.setAttribute('class','location');
+    }else if(transitions.includes(subText)){
+        el.setAttribute('class','transition');
+    }else if(previousElClass == 'character'||previousElClass == 'parenthesis'){
+        el.setAttribute('class','dialog');
+    }else if(countWords(text)<=2){
+        el.setAttribute('class','character');
+    }else{
+        el.setAttribute('class','text');
+    };
+};
+
+function countWords(text) {
+    text = text.replace(/(^\s*)|(\s*$)/gi,"");
+    text = text.replace(/[ ]{2,}/gi," ");
+    text = text.replace(/\n /,"\n");
+    return text.split(' ').length;
+ }
 //Function that shifts through the different classes for the selected element
 function changeClass() {
     let el = document.getElementById(currentElId);
@@ -519,7 +521,7 @@ function zoom(param) {
     }
 };
 
-//------------------------------------------------------- IPC renderer methods -----------------------------------------
+//------------------------------------------------------- ipcRenderer.on methods -----------------------------------------
 
 ipcRenderer.on('add-element', (e, args) => {
     switch (args) {
@@ -702,10 +704,10 @@ ipcRenderer.on('show-new-item', (e, args) => {
     document.location.reload();
 });
 
+//------------------------------------------ DOM related events ----------------------------------
 //Function that detects changes on the document. 
 document.getElementById('content').addEventListener('keypress', e =>{
     if(e.keyCode != 91 || e.key=='Control'){ //Escaping ctrl/cmd keyboard events
-        console.log('key',e.key);
         unsavedChanges = 1;
         ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
             content: 1,
@@ -720,27 +722,26 @@ document.getElementById('content').addEventListener('keypress', e =>{
 //Specific keyboard events that are not keybindings
 document.getElementById('content').onkeypress = e =>{
     let keyCode = e.key;
-    let currentElementClass = '';
     let currentEl = document.getElementById(currentElId);
-    noBreak = document.getElementById('mode').checked;
-    console.log('Keycode',keyCode);
-    if(keyCode=='Enter' && noBreak==true){
+    if(keyCode=='Enter' && document.getElementById('mode').checked){
         e.preventDefault();
-        console.log('No breaks');
-        console.log('currentEl class',currentEl.className);
-        noBreakFunc();
-        newElement('neutral');
+        if(classes.includes(currentEl.className)){ //This bit prevents the app to parse an element that already has a class.
+            newElement('neutral');
+        }else{
+            noBreakFunc();
+            newElement('neutral');
+        };
         unsavedChanges = 1;
     }else if(keyCode=='Enter' && noBreak==false){
         e.preventDefault();
         if(previousElClass == 'character'||previousElClass == 'parenthesis') newElement('dialog');
         else if(previousElClass == 'dialog') newElement('character');
         else newElement('text');
-        console.log('Normal');
         unsavedChanges = 1;
     };
 };
 
+//This section handles the enter event so it parses the file element correctly
 document.getElementById('content').onkeyup = e =>{
     let keyCode = e.key;
     if(process.platform=='darwin'){
@@ -780,6 +781,7 @@ document.getElementById('print').addEventListener('click', (e) => {
 window.addEventListener('focus',e =>{
     ipcRenderer.send('window-focus',1);
 });
+
 window.addEventListener("blur", e=>{
     ipcRenderer.send('window-focus',0);
 });
