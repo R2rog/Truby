@@ -1,5 +1,6 @@
 const electron = require('electron');
 const Store = require('electron-store');
+const autoUpdater = require('electron-updater');
 //const Sudoer = require('electron-sudo');
 const url = require('url');
 const path = require('path');
@@ -63,6 +64,26 @@ app.on('ready', function () {
     Menu.setApplicationMenu(mainMenuTemplate);
 });
 
+//Checking the current version of the app.
+ipcMain.on('app_version', (event) => {
+    event.sender.send('app_version', { version: app.getVersion() });
+});
+//Checking for updates of the app
+mainWindow.once('ready-to-show', () => {
+    autoUpdater.checkForUpdatesAndNotify();
+});
+autoUpdater.on('update-available', () => {
+    mainWindow.webContents.send('update_available');
+});
+autoUpdater.on('update-downloaded', () => {
+    mainWindow.webContents.send('update_downloaded');
+});
+//Restart the app in order to install the update.
+ipcMain.on('restart_app', () => {
+    autoUpdater.quitAndInstall();
+});
+
+//Setting the menu for the app
 module.exports = function (window) {
     return Menu.buildFromTemplate
 }
@@ -130,7 +151,7 @@ function saveDoc() {
     });
 };
 
-//Handle create add window
+//Handle create add window that gets the name for new Scripts
 function createAddWindow() {
     addWindow = new BrowserWindow({
         width: 300,

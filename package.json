@@ -8,13 +8,15 @@
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
-    "dist:linux": "electron-builder --linux",
-    "dist:mac": "electron-builder --mac",
-    "dist:win": "electron-builder --win"
+    "build:linux": "electron-builder --linux --publish never",
+    "build:mac": "electron-builder --mac --publish never",
+    "build:win": "electron-builder --win --publish never",
+    "deploy": "electron-builder build --mac --win --publish always"
   },
   "author": "R2rog <sirR2rog@gmail.com>",
   "dependencies": {
     "electron-store": "^7.0.3",
+    "electron-updater": "^4.3.9",
     "jquery": "^3.6.0",
     "uaup-js": "0.0.22"
   },

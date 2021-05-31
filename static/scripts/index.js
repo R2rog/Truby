@@ -51,7 +51,13 @@ const LinuxUpdateOptions = {
 };
 // Global variables
 //const content = document.getElementById('content');
+
+//constant html elements.
 const content = document.getElementById('page');
+/*const notification = document.getElementById('notification');
+const message = document.getElementById('message');
+const restartButton = document.getElementById('restart-button');*/
+
 let directory = './data';
 let filenames = 'fs.readdirSync(directory)';
 let script = ''; //Current selected script.
@@ -356,7 +362,7 @@ function insertElement(newElement,id,type) {
         previousEl = currentEl;
         previousElClass = currentEl.className;
         currentEl.insertAdjacentElement('afterend',newElement);
-        let range = new Range();
+        let range = new Range();//This section is the one that allows the cursor to get placed inside the new html element
         let sel = window.getSelection();
         range.setStartBefore(newElement);
         range.isCollapsed = true;
@@ -435,6 +441,7 @@ function countWords(text) {
     text = text.replace(/\n /,"\n");
     return text.split(' ').length;
  }
+
 //Function that shifts through the different classes for the selected element
 function changeClass() {
     let el = document.getElementById(currentElId);
@@ -703,6 +710,20 @@ ipcRenderer.on('get-selection',(e,args)=>{
 ipcRenderer.on('show-new-item', (e, args) => {
     document.location.reload();
 });
+
+ipcRenderer.on('update_available', () => {
+    ipcRenderer.removeAllListeners('update_available');
+    message.innerText = 'A new update is available. Downloading now...';
+    notification.classList.remove('hidden');
+  });
+
+ipcRenderer.on('update_downloaded', () => {
+    ipcRenderer.removeAllListeners('update_downloaded');
+    message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
+    restartButton.classList.remove('hidden');
+    notification.classList.remove('hidden');
+});
+
 
 //------------------------------------------ DOM related events ----------------------------------
 //Function that detects changes on the document. 
