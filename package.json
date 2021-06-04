@@ -17,11 +17,10 @@
   "dependencies": {
     "electron-store": "^7.0.3",
     "electron-updater": "^4.3.9",
-    "jquery": "^3.6.0",
-    "uaup-js": "0.0.22"
+    "jquery": "^3.6.0"
   },
   "devDependencies": {
-    "electron": "^11.3.0",
+    "electron": "^11.4.8",
     "electron-builder": "^22.10.5",
     "electron-notarize": "^1.0.0"
   },

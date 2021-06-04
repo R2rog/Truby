@@ -6,7 +6,6 @@ const Store = require('electron-store');
 const  $ = require('jquery');
 const os = require('os');
 const jQuery = require('jquery');
-const uaup = require('uaup-js');//Module that checks for updates via Git Releases
 
 //Object instances
 const store = new Store();

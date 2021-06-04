@@ -68,7 +68,9 @@ app.on('ready', function () {
 ipcMain.on('app_version', (event) => {
     event.sender.send('app_version', { version: app.getVersion() });
 });
-//Checking for updates of the app
+
+/*Uncomment this section when autoupdate is available
+Checking for updates of the app 
 mainWindow.once('ready-to-show', () => {
     autoUpdater.checkForUpdatesAndNotify();
 });
@@ -81,7 +83,7 @@ autoUpdater.on('update-downloaded', () => {
 //Restart the app in order to install the update.
 ipcMain.on('restart_app', () => {
     autoUpdater.quitAndInstall();
-});
+});*/
 
 //Setting the menu for the app
 module.exports = function (window) {
