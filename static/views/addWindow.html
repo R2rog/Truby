@@ -23,13 +23,16 @@
             e.preventDefault();
             //let title = document.getElementById('title').value + '.json';
             let title = document.getElementById('title').value;
-            if(title.length<1){
-                alert('Please introduce a valid name')
-            }else{
-                ipcRenderer.send('newDoc', title);
-            };
-        });
+            var format = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
 
+            if(format.test(title)){
+                alert('Please introduce a valid name')
+                return true;
+            } else {
+                ipcRenderer.send('newDoc', title);
+                return false;
+            }
+        });
         ipcRenderer.on('newDoc',(e,arg)=>{
             alert(arg);
             window.close();

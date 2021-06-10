@@ -325,7 +325,6 @@ ipcMain.on('switch-scripts', (e, content) => {
 
 ipcMain.on('window-focus', (e,args)=>{
     if(args){
-        console.log('Activate global shortcuts');
         //Global shortcut to prevent the copy, cut and paste default methods in Windows. 
         globalShortcut.register('Control+X', ()=>{
             mainWindow.webContents.send('get-selection','cut');
@@ -337,7 +336,6 @@ ipcMain.on('window-focus', (e,args)=>{
             mainWindow.webContents.send('paste');
         });
     }else{
-        console.log('Deactivate global shortcuts');
         globalShortcut.unregisterAll();
     };
 });

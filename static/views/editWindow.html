@@ -23,10 +23,13 @@
             e.preventDefault();
             //let newTitle = document.getElementById('title').value + '.json';
             let newTitle = document.getElementById('title').value;
-            if(newTitle.length<1){
-                alert('Please introduce a valid name')
-            }else{
+            var format = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+            if(format.test(newTitle)){
+                alert('Please introduce a valid name without special characters.')
+                return true;
+            } else {
                 ipcRenderer.send('name-changed', newTitle);
+                return false;
             };
         });
         ipcRenderer.on('name-changed',(e,args)=>{

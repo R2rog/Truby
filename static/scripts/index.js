@@ -9,53 +9,11 @@ const jQuery = require('jquery');
 
 //Object instances
 const store = new Store();
-const defaultStages = {
-    Checking: "Checking For Updates!", // When Checking For Updates.
-    Found: "Update Found!",  // If an Update is Found.
-    NotFound: "No Update Found.", // If an Update is Not Found.
-    Downloading: "Downloading...", // When Downloading Update.
-    Unzipping: "Installing...", // When Unzipping the Archive into the Application Directory.
-    Cleaning: "Finalizing...", // When Removing Temp Directories and Files (ex: update archive and tmp directory).
-    Launch: "Launching..." // When Launching the Application.
-};
-const WinUpdateOptions = {
-    useGithub: true, // {Default is true} [Optional] Only Github is Currenlty Supported.
-    gitRepo: "Truby", // [Required] Your Repo Name
-    gitUsername: "R2rog",  // [Required] Your GitHub Username.
-    appName: "qwerty", //[Required] The Name of the app archive and the app folder.
-    appExecutableName: "qwerty.exe", //[Required] The Executable of the Application to be Run after updating.
-    progressBar: document.getElementById('update'), // {Default is null} [Optional] If Using Electron with a HTML Progressbar, use that element here, otherwise ignore
-    label: document.getElementById('update-label'), // {Default is null} [Optional] If Using Electron, this will be the area where we put status updates using InnerHTML
-    stageTitles: defaultStages, // {Default is defaultStages} [Optional] Sets the Status Title for Each Stage
-};
-const MacUpdateOptions = {
-    useGithub: true, // {Default is true} [Optional] Only Github is Currenlty Supported.
-    gitRepo: "Truby", // [Required] Your Repo Name
-    gitUsername: "R2rog",  // [Required] Your GitHub Username.
-    appName: "qwerty", //[Required] The Name of the app archive and the app folder.
-    appExecutableName: "qwerty.dmg", //[Required] The Executable of the Application to be Run after updating.
-    progressBar: document.getElementById('update'), // {Default is null} [Optional] If Using Electron with a HTML Progressbar, use that element here, otherwise ignore
-    label: document.getElementById('update-label'), // {Default is null} [Optional] If Using Electron, this will be the area where we put status updates using InnerHTML
-    stageTitles: defaultStages, // {Default is defaultStages} [Optional] Sets the Status Title for Each Stage
-};
-const LinuxUpdateOptions = {
-    useGithub: true, // {Default is true} [Optional] Only Github is Currenlty Supported.
-    gitRepo: "Truby", // [Required] Your Repo Name
-    gitUsername: "R2rog",  // [Required] Your GitHub Username.
-    appName: "qwerty", //[Required] The Name of the app archive and the app folder.
-    appExecutableName: "qwerty.tgz", //[Required] The Executable of the Application to be Run after updating.
-    progressBar: document.getElementById('update'), // {Default is null} [Optional] If Using Electron with a HTML Progressbar, use that element here, otherwise ignore
-    label: document.getElementById('update-label'), // {Default is null} [Optional] If Using Electron, this will be the area where we put status updates using InnerHTML
-    stageTitles: defaultStages, // {Default is defaultStages} [Optional] Sets the Status Title for Each Stage
-};
-// Global variables
-//const content = document.getElementById('content');
 
-//constant html elements.
+//-------------------------------------- Global variables ------------------------------
+//Constant html elements.
 const content = document.getElementById('page');
-/*const notification = document.getElementById('notification');
-const message = document.getElementById('message');
-const restartButton = document.getElementById('restart-button');*/
+//const content = document.getElementById('content');
 
 let directory = './data';
 let filenames = 'fs.readdirSync(directory)';
@@ -206,28 +164,6 @@ async function checkProcess() {
     return toolbar;
 };
 
-/*Checks for upadtes from Git Release
-async function checkUpdates(){
-    let update = uaup.CheckForUpdates(MacUpdateOptions);
-    //let platform = os.platform;
-    if(update){
-        switch (process.platform) {
-            case 'win32':
-                uaup.Update(WinUpdateOptions);
-                break;
-            case 'darwin':
-                uaup.Update(MacUpdateOptions);
-                break;
-            case 'linux':
-                uaup.Update(LinuxUpdateOptions);
-                break;
-        };
-        
-    };
-    console.log('Update', update);
-    return false;
-};*/
-
 //Menu handler using jQuery
 $(function() {
     function slideMenu() {
@@ -326,7 +262,6 @@ function currentElemIndex(id) {
     preiviousEl = currentEl;
     previousElClass = currentEl.className;
     currentElId = id;
-    console.log('Clicked el id', currentElId);
 };
 
 //Function that creates a character html tag
@@ -338,11 +273,10 @@ function newElement(type) {
     newElement.setAttribute('class', type);
     newElement.setAttribute('id', id);
     newElement.setAttribute('data-placeholder', 'type');
-    newElement.setAttribute('display','block');
     newElement.setAttribute("onclick", getId);
     switch(type){
         case 'parenthesis':
-            newElement.innerText = '(';
+            newElement.innerText = '()';
             break;
         case 'scene':
             newElement.setAttribute('tabindex', 0);
@@ -352,54 +286,21 @@ function newElement(type) {
 };
 
 function insertElement(newElement,id,type) {
-    console.log('Current el id:', currentElId);
     content.focus();
+    console.log('Current el:',document.getElementById(currentElId));
+    console.log('New element',newElement);
+    console.log('previous el',previousEl);
     let currentEl = document.getElementById(currentElId);
-    if (currentEl == null) {
-        insertFirst(type);
-    } else {
+    //if(currentEl==null) currentEl = previousEl;
+    if(currentEl == null){
+        let selObj = document.getSelection();
+        selObj.removeAllRanges();
+    }else{
         previousEl = currentEl;
         previousElClass = currentEl.className;
         currentEl.insertAdjacentElement('afterend',newElement);
-        let range = new Range();//This section is the one that allows the cursor to get placed inside the new html element
-        let sel = window.getSelection();
-        range.setStartBefore(newElement);
-        range.isCollapsed = true;
-        sel.removeAllRanges();
-        sel.addRange(range);
-        currentElId = newElement.id;
-        console.log('New element',newElement);
-        console.log('previous el',previousEl);
     };
-};
-
-function renderElements(arr, newElement) {
-    content.innerHTML = "";
-    arr.forEach(dialog => {
-        content.innerHTML += dialog.outerHTML;
-    });
-};
-
-//------------------------------------- No Breaks mode insertion functions -------------------------------------
-function insertFirst(type){
-    counter = counter + 1;
-    id = counter.toString();
-    getId = "currentElemIndex(" + id + ")";
-    let newElement = document.createElement("DIV");
-    newElement.setAttribute('class', type);
-    newElement.setAttribute('id',id);
-    newElement.setAttribute('tabindex', 0);
-    //newElement.setAttribute('data-placeholder', type);
-    newElement.setAttribute('display','block');
-    newElement.setAttribute("onclick", getId);
-    console.log('insertFirst',newElement);
-    console.log('previous el',previousEl);
-    if(previousEl == null){
-        content.append(newElement);
-    }else{
-        previousEl.insertAdjacentElement('afterend',newElement);
-    };
-    let range = new Range();
+    let range = new Range();//This section is the one that allows the cursor to get placed inside the new html element
     let sel = window.getSelection();
     range.setStartBefore(newElement);
     range.isCollapsed = true;
@@ -408,6 +309,15 @@ function insertFirst(type){
     currentElId = newElement.id;
 };
 
+//Only used in the paste function to refresh the page
+function renderElements(arr, newElement) {
+    content.innerHTML = "";
+    arr.forEach(dialog => {
+        content.innerHTML += dialog.outerHTML;
+    });
+};
+
+//------------------------------------- No Breaks mode insertion functions -------------------------------------
 function noBreakFunc(){//Function that gives style to the script without the user input.
     let el = document.getElementById(currentElId);
     console.log('Current el',el);
@@ -449,9 +359,9 @@ function changeClass() {
     if (i + 1 >= classes.length) i = -1;
     el.setAttribute('class', classes[i + 1]);
     el.setAttribute('data-placeholder',classes[i + 1]);
-    console.log('Class getting changed');
 };
 
+/*------------------------------------- Internal script modification --------------------*/
 function deleteScript() {
     dialog.showMessageBox({
         type: 'question',
@@ -739,11 +649,24 @@ document.getElementById('content').addEventListener('keypress', e =>{
     };
 });
 
+document.getElementById('content').addEventListener('click',e =>{
+    unsavedChanges = 1;
+    ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
+        content: 1,
+        scripts: selectedScripts
+    });
+    let title = document.getElementById(script);
+    document.getElementById('script-title').style.color = 'red';
+    title.style.color = "black";
+});
+
 //Specific keyboard events that are not keybindings
 document.getElementById('content').onkeypress = e =>{
     let keyCode = e.key;
     let currentEl = document.getElementById(currentElId);
-    if(keyCode=='Enter' && document.getElementById('mode').checked){
+    let noBreak= document.getElementById('mode').checked;
+    if(currentEl == null)currentEl=previousEl;
+    if(keyCode=='Enter' && noBreak==true){
         e.preventDefault();
         if(classes.includes(currentEl.className)){ //This bit prevents the app to parse an element that already has a class.
             newElement('neutral');
@@ -754,8 +677,8 @@ document.getElementById('content').onkeypress = e =>{
         unsavedChanges = 1;
     }else if(keyCode=='Enter' && noBreak==false){
         e.preventDefault();
-        if(previousElClass == 'character'||previousElClass == 'parenthesis') newElement('dialog');
-        else if(previousElClass == 'dialog') newElement('character');
+        if(currentEl.className == 'character'||currentEl.className == 'parenthesis') newElement('dialog');
+        else if(currentEl.className == 'dialog') newElement('character');
         else newElement('text');
         unsavedChanges = 1;
     };
@@ -772,6 +695,7 @@ document.getElementById('content').onkeyup = e =>{
         };  
     };
 };
+
 
 document.getElementById('print').addEventListener('click', (e) => {
     let scenes = document.getElementsByClassName('scene');
@@ -796,6 +720,18 @@ document.getElementById('print').addEventListener('click', (e) => {
     };
 });
 
+/*Handles the event when the user erase one or more elements through selection
+document.onselectionchange = () => {
+    let selObj = document.getSelection();
+    let contentNodes = Array.from(content.childNodes);
+    let lastNode = selObj.focusNode.parentElement;
+    let lastNodeId = contentNodes.indexOf(lastNode);
+    let tempPreviousEl = contentNodes[lastNodeId-1]
+    let range = new Range();//This section is the one that allows the cursor to get placed inside the new html element
+    //currentElId = tempPreviousEl.id;
+    //TODO: Only set the previousEl and insertElement function will do the rest
+};*/
+
 //------------------------------------ Window related events --------------------------------------
 //Method that checks if main window is focused so that the global shortcuts dont intervene with other apps
 window.addEventListener('focus',e =>{
@@ -813,7 +749,6 @@ window.onafterprint = (event) => {
     for (let i = 0; i < scenes.length; i++) {
         scenes[i].style.visibility = 'visible';
     };
-    console.log('After print');
-  };
+};
 
 mainProcess();

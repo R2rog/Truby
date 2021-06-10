@@ -28,20 +28,25 @@ body::-webkit-scrollbar-thumb{
 
 
 /*-------------------------------------Printing settings----------------------------------*/
-@page{
-  size: A4;
-  margin: 3rem 0 3rem 0;
-}
-
 @media print{
+  /*@page{
+    size: A4;
+    margin: 25mm 0 25mm 0;
+  }*/
+  @page:first{
+    size: A4;
+    margin: 0 0 25mm 0;
+  }
   body * {
     visibility: hidden;
   }
   .print-content, .print-content * {
     padding: 0;
     visibility: visible;
+    position: relative;
   }
 };
+/*----------------------------------------------------------------------------------------*/
 .mystyle{
     font-family: 'Courier Prime', monospace;
     background-color: salmon;
@@ -429,6 +434,7 @@ button:hover{
     break-inside: avoid;
     user-select: inherit;
     position: relative;
+    /*display: inline-block;*/
 }
 .character:empty::before{
   content:attr(data-placeholder);
@@ -444,6 +450,7 @@ button:hover{
   break-inside: avoid;
   user-select: inherit;
   position: relative;
+  /*display: inline-block;*/
 }
 .parenthesis:empty::before{
   content:attr(data-placeholder);
@@ -459,6 +466,7 @@ button:hover{
   break-inside: avoid;
   user-select: inherit;
   position: relative;
+  /*display: inline-block;*/
 }
 .dialog:empty::before{
   content:attr(data-placeholder);
@@ -474,6 +482,7 @@ button:hover{
     break-inside: avoid;
     user-select: inherit;
     position: relative;
+    /*display: inline-block;*/
 }
 .location:empty::before{
   content:attr(data-placeholder);
@@ -487,6 +496,7 @@ button:hover{
     margin-top: 10px;
     break-inside: avoid;
     user-select: inherit;
+    /*display: inline-block;*/
 }
 .neutral:empty::before{
   content:attr(data-placeholder);
@@ -501,6 +511,7 @@ button:hover{
     break-inside: avoid;
     user-select: inherit;
     position: relative;
+    /*display: inline-block;*/
 }
 .text:empty::before{
   content:attr(data-placeholder);
@@ -516,6 +527,7 @@ button:hover{
     break-inside: avoid;
     user-select: inherit;
     position: relative;
+    /*display: inline-block;*/
 }
 .transition:empty::before{
   content:attr(data-placeholder);
@@ -820,7 +832,7 @@ input:checked + .slider:before {
   transform: translateX(26px);
 }
 
-/* Rounded sliders */
+/*--------------------------------- Rounded sliders -------------------------------------*/
 .slider.round {
   border-radius: 34px;
 }
