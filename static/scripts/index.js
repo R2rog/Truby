@@ -29,7 +29,9 @@ let classes = ['character','text', 'dialog','parenthesis', 'location', 'transiti
 let clipboard = [];
 let selectedScripts = [];
 let shortcuts = [];
+let undoLog = [];
 let currentElId = 0;
+let changedFromInsertElement = 0;
 let noBreak = true;
 
 //---------------------------------------- Asyn functions -------------------------------------------
@@ -262,6 +264,7 @@ function currentElemIndex(id) {
     preiviousEl = currentEl;
     previousElClass = currentEl.className;
     currentElId = id;
+    console.log('El atributes',currentEl.innerText.length);
 };
 
 //Function that creates a character html tag
@@ -287,25 +290,28 @@ function newElement(type) {
 
 function insertElement(newElement,id,type) {
     content.focus();
-    console.log('Current el:',document.getElementById(currentElId));
-    console.log('New element',newElement);
-    console.log('previous el',previousEl);
-    let currentEl = document.getElementById(currentElId);
+    //let currentEl = document.getElementById(currentElId);
+    let selObj = window.getSelection();
+    let range = new Range();//This section is the one that allows the cursor to get placed inside the new html element
+    let currentEl = selObj.anchorNode.parentElement;
+    /*console.log('Current element',currentEl);
+    console.log('Previous element', previousEl);
+    console.log('newElement', newElement);
     //if(currentEl==null) currentEl = previousEl;
     if(currentEl == null){
-        let selObj = document.getSelection();
         selObj.removeAllRanges();
     }else{
         previousEl = currentEl;
         previousElClass = currentEl.className;
         currentEl.insertAdjacentElement('afterend',newElement);
-    };
-    let range = new Range();//This section is the one that allows the cursor to get placed inside the new html element
-    let sel = window.getSelection();
+    };*/
+    previousEl = currentEl;
+    previousElClass = currentEl.className;
+    currentEl.insertAdjacentElement('afterend',newElement);
     range.setStartBefore(newElement);
     range.isCollapsed = true;
-    sel.removeAllRanges();
-    sel.addRange(range);
+    selObj.removeAllRanges();
+    selObj.addRange(range);
     currentElId = newElement.id;
 };
 
@@ -320,8 +326,6 @@ function renderElements(arr, newElement) {
 //------------------------------------- No Breaks mode insertion functions -------------------------------------
 function noBreakFunc(){//Function that gives style to the script without the user input.
     let el = document.getElementById(currentElId);
-    console.log('Current el',el);
-    console.log('Previous el class:',previousElClass);
     let text = el.innerText;
     let transitions = ['FADE', 'FADE', 'CUT ', 'DISS','fade','cut ','diss'];
     let heathers = ['INT.','EXT.','INT ','EXT ', 'int.', 'ext.', 'ext ','int '];
@@ -338,7 +342,7 @@ function noBreakFunc(){//Function that gives style to the script without the use
     }else if(previousElClass == 'character'||previousElClass == 'parenthesis'){
         el.setAttribute('class','dialog');
     }else if(countWords(text)<=2){
-        el.setAttribute('class','character');
+        el.setAttribute('class','character'||text==text.toUpperCase());
     }else{
         el.setAttribute('class','text');
     };
@@ -548,24 +552,61 @@ ipcRenderer.on('quit', (e, args) => {
 
 //Custom paste function to prevent redundancy
 ipcRenderer.on('paste',(e,args)=>{
+    let selObj = window.getSelection();
     let contentNodes = Array.from(content.childNodes);
     let el = document.getElementById(currentElId);
     currentIndex = Array.prototype.indexOf.call(contentNodes, el);
-    console.log('paste in current index',currentIndex);
     let firstHalf = [];
     let secondHalf = [];
     let newContent = [];
-    if(currentIndex >= contentNodes.length-1){
-        newContent = contentNodes.concat(clipboard);
-    }else{
-        firstHalf = contentNodes.slice(0,currentIndex+1);
-        secondHalf = contentNodes.slice(currentIndex+1,contentNodes.length);
-        newContent = firstHalf.concat(clipboard);
-        newContent = newContent.concat(secondHalf);
-    }
+    if(selObj.anchorOffset>=el.innerText.length){
+        console.log('Append to current node this clipboard',clipboard);
+        if(currentIndex >= contentNodes.length-1)newContent = contentNodes.concat(clipboard);
+        else{//Any other node that is not the last one.
+            firstHalf = contentNodes.slice(0,currentIndex+1);
+            secondHalf = contentNodes.slice(currentIndex+1,contentNodes.length);
+            newContent = firstHalf.concat(clipboard);
+            newContent = newContent.concat(secondHalf);
+            console.log('newContent',newContent);
+
+        };
+        renderElements(newContent,'hi');
+    }else selObj.getRangeAt(0).insertNode(clipboard[0]);
     //clipboard = [];
     unsavedChanges == 1;
-    renderElements(newContent,'hi');
+});
+
+ipcRenderer.on('undo',(e,args)=>{
+    //let currentEl = window.getSelection().anchorNode.parentElement;
+    let contentNodes = Array.from(content.childNodes);
+    for (let i = 0; i < contentNodes.length; i++) {
+        if(contentNodes[i].innerText.length == 0){
+            contentNodes[i].remove();
+        };
+    };
+    /*
+        for (let i = 0; i < contentNodes.length; i++) {
+        if(contentNodes[i].innerText.length == 0){
+            contentNodes[i].remove();
+        }
+    };
+    if(undoLog.includes(currentEl)){
+        console.log('Saved');
+    }else{
+        undoLog.push(currentEl);
+    }
+    for (let i = 0; i < undoLog.length; i++) {
+        if(undoLog[i].innerText.length == 0){
+            console.log('Erasing:', undoLog[i]);
+            undoLog[i].remove();
+        }
+    };
+    if(currentEl.innerText.length == 0){
+        console.log('Remove');
+        currentEl.remove();
+    }else{
+        console.log('Current selection',window.getSelection().anchorNode.parentElement.innerText);
+    }*/
 });
 
 //Custom made cut,copy operation to prevent redundancy
@@ -584,32 +625,45 @@ ipcRenderer.on('get-selection',(e,args)=>{
     };
     clipboard = [];
     if(args == 'copy'){
-        console.log('copy elements');
-        clipboard = [];//Cleaning the clipboard
-        for (index = firstNodeId; index <= lastNodeId; index++){
-            let newElement = document.createElement("DIV");
-            let id = Math.floor((Math.random() * 1000000) + 10000);
-            let getId = "currentElemIndex(" + id + ")";
-            newElement.setAttribute('class', contentNodes[index].attributes[0].value);
-            newElement.setAttribute('id',id );
-            newElement.setAttribute('tabindex', 0);
-            newElement.innerText = contentNodes[index].innerText;
-            newElement.setAttribute('data-placeholder', contentNodes[index].attributes[0].value);
-            newElement.setAttribute('contentEditable', 'true');
-            newElement.setAttribute("onclick", getId);   
-            selection.push(newElement);
-        }
-        clipboard = selection;
+        console.log('Copy');
+        if(firstNode===lastNode){//Case when the selection is just a part inside the node
+            let newSpan = document.createElement('SPAN');
+            newSpan.innerText =selObj.getRangeAt(0).cloneContents().textContent;
+            clipboard.push(newSpan);
+        }else{
+            for (index = firstNodeId; index <= lastNodeId; index++){
+                let newElement = document.createElement("DIV");
+                let id = Math.floor((Math.random() * 1000000) + 10000);
+                let getId = "currentElemIndex(" + id + ")";
+                newElement.setAttribute('class', contentNodes[index].attributes[0].value);
+                newElement.setAttribute('id',id );
+                newElement.setAttribute('tabindex', 0);
+                newElement.innerText = contentNodes[index].innerText;
+                newElement.setAttribute('data-placeholder', contentNodes[index].attributes[0].value);
+                newElement.setAttribute('contentEditable', 'true');
+                newElement.setAttribute("onclick", getId);   
+                selection.push(newElement);
+            };
+            clipboard = selection;
+            console.log('Clipboard',clipboard);
+        };
     }else if(args == 'cut'){
-        console.log('cut elements');
-        clipboard = []; //Cleaning clipboard
-        selection = contentNodes.slice(firstNodeId,lastNodeId+1);
-        let firstHalf = contentNodes.slice(0,firstNodeId);
-        let secondHalf = contentNodes.slice(lastNodeId+1,contentNodes.length);
-        let newContents = firstHalf.concat(secondHalf);
-        clipboard = selection;
-        renderElements(newContents,'hi');
-        unsavedChanges == 1;
+        console.log('Cut');
+        if(firstNode===lastNode){//Case when the selection is just a part inside the node
+            let newSpan = document.createElement('SPAN');
+            newSpan.innerText =selObj.getRangeAt(0).cloneContents().textContent;
+            clipboard.push(newSpan);
+            selObj.deleteFromDocument();
+        }else{
+            selection = contentNodes.slice(firstNodeId,lastNodeId+1);
+            let firstHalf = contentNodes.slice(0,firstNodeId);
+            let secondHalf = contentNodes.slice(lastNodeId+1,contentNodes.length);
+            let newContents = firstHalf.concat(secondHalf);
+            clipboard = selection;
+            renderElements(newContents,'hi');//TODO: Uncomment this section
+            unsavedChanges == 1;
+        }
+        console.log('Clipboard',clipboard);
     }else{
         console.log('Begin node index',firstNodeId);
         console.log('End node index', lastNodeId);
@@ -637,7 +691,7 @@ ipcRenderer.on('update_downloaded', () => {
 //------------------------------------------ DOM related events ----------------------------------
 //Function that detects changes on the document. 
 document.getElementById('content').addEventListener('keypress', e =>{
-    if(e.keyCode != 91 || e.key=='Control'){ //Escaping ctrl/cmd keyboard events
+    if(e.keyCode != 91 || e.key!='Control'){ //Escaping ctrl/cmd keyboard events
         unsavedChanges = 1;
         ipcRenderer.send('unsaved-changes', { // alerting ./component/Menu.js
             content: 1,
@@ -696,7 +750,6 @@ document.getElementById('content').onkeyup = e =>{
     };
 };
 
-
 document.getElementById('print').addEventListener('click', (e) => {
     let scenes = document.getElementsByClassName('scene');
     document.getElementById('scripts').style.visibility = 'hidden';
@@ -704,7 +757,6 @@ document.getElementById('print').addEventListener('click', (e) => {
     for (let i = 0; i < scenes.length; i++) {
         scenes[i].style.visibility = 'hidden';
     };
-    console.log('Unsaved changes', unsavedChanges);
     if (unsavedChanges == 1) {
         dialog.showMessageBox({
             type: 'question',
@@ -720,17 +772,19 @@ document.getElementById('print').addEventListener('click', (e) => {
     };
 });
 
-/*Handles the event when the user erase one or more elements through selection
+//Handles the event when the user erase one or more elements through selection
 document.onselectionchange = () => {
+    changedFromInsertElement = 0;
     let selObj = document.getSelection();
     let contentNodes = Array.from(content.childNodes);
     let lastNode = selObj.focusNode.parentElement;
     let lastNodeId = contentNodes.indexOf(lastNode);
     let tempPreviousEl = contentNodes[lastNodeId-1]
     let range = new Range();//This section is the one that allows the cursor to get placed inside the new html element
+    //console.log('Current element',selObj.anchorNode.parentElement);
     //currentElId = tempPreviousEl.id;
     //TODO: Only set the previousEl and insertElement function will do the rest
-};*/
+};
 
 //------------------------------------ Window related events --------------------------------------
 //Method that checks if main window is focused so that the global shortcuts dont intervene with other apps

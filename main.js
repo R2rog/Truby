@@ -387,7 +387,18 @@ if (process.platform === 'darwin') {//Checking if running in MacOs
         {
             label: 'Edit',
             submenu: [
-                { role: 'undo' },
+                {
+                    label: 'Undo', 
+                    accelerator: 'CmdOrCtrl+Z',
+                    click(){
+                        mainWindow.webContents.undo();
+                        mainWindow.webContents.send('undo');
+                    }
+                    /*role: 'undo',
+                    click(){
+                        mainWindow.webContents.send('undo');
+                    }*/
+                },
                 { role: 'redo' },
                 { 
                     //role: 'paste'
