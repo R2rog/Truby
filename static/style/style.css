@@ -32,11 +32,11 @@ body::-webkit-scrollbar-thumb{
   /*@page{
     size: A4;
     margin: 25mm 0 25mm 0;
-  }*/
+  }
   @page:first{
     size: A4;
     margin: 0 0 25mm 0;
-  }
+  }*/
   body * {
     visibility: hidden;
   }
@@ -44,6 +44,18 @@ body::-webkit-scrollbar-thumb{
     padding: 0;
     visibility: visible;
     position: relative;
+  }
+  #page *{
+    page-break-inside: avoid;
+    visibility: visible;
+    position: relative;
+  }
+  #page{
+    background-color: white;
+    position: relative;
+    left: 0;
+    top: 0;
+    padding: 0;
   }
 };
 /*----------------------------------------------------------------------------------------*/
@@ -431,8 +443,8 @@ button:hover{
     margin-top: 10px;
     margin-left: 35%;
     text-justify: inter-word;
-    break-inside: avoid;
-    user-select: inherit;
+    /*break-inside: avoid;*/
+    /*user-select: inherit;*/
     position: relative;
     /*display: inline-block;*/
 }
@@ -447,8 +459,8 @@ button:hover{
   margin-top: 5px;
   margin-left: 28%;
   text-justify: inter-word;
-  break-inside: avoid;
-  user-select: inherit;
+  /*break-inside: avoid;
+  user-select: inherit;*/
   position: relative;
   /*display: inline-block;*/
 }
@@ -463,8 +475,8 @@ button:hover{
   margin-left: 20%;
   margin-right: 20%;
   text-justify: inter-word;
-  break-inside: avoid;
-  user-select: inherit;
+  /*break-inside: avoid;
+  user-select: inherit;*/
   position: relative;
   /*display: inline-block;*/
 }
@@ -479,8 +491,8 @@ button:hover{
     background-color: rgb(211, 211, 211);
     width: 100%;
     margin-top: 10px;
-    break-inside: avoid;
-    user-select: inherit;
+    /*break-inside: avoid;
+    user-select: inherit;*/
     position: relative;
     /*display: inline-block;*/
 }
@@ -508,8 +520,8 @@ button:hover{
     /*background-color: rgb(248, 232, 85);*/
     width: 100%;
     margin-top: 10px;
-    break-inside: avoid;
-    user-select: inherit;
+    /*break-inside: avoid;
+    user-select: inherit;*/
     position: relative;
     /*display: inline-block;*/
 }
@@ -524,8 +536,8 @@ button:hover{
     /*background-color: lightslategray;*/
     margin-top: 10px;
     width: 100%;
-    break-inside: avoid;
-    user-select: inherit;
+    /*break-inside: avoid;
+    user-select: inherit;*/
     position: relative;
     /*display: inline-block;*/
 }
@@ -543,8 +555,8 @@ button:hover{
   /*background-color:var(--text-primary);*/
   margin-top: 10px;
   width: 100%;
-  break-inside: avoid;
-  user-select: inherit;
+  /*break-inside: avoid;
+  user-select: inherit;*/
   position: relative;
 }
 .scene:empty::before{

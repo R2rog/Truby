@@ -294,17 +294,6 @@ function insertElement(newElement,id,type) {
     let selObj = window.getSelection();
     let range = new Range();//This section is the one that allows the cursor to get placed inside the new html element
     let currentEl = selObj.anchorNode.parentElement;
-    /*console.log('Current element',currentEl);
-    console.log('Previous element', previousEl);
-    console.log('newElement', newElement);
-    //if(currentEl==null) currentEl = previousEl;
-    if(currentEl == null){
-        selObj.removeAllRanges();
-    }else{
-        previousEl = currentEl;
-        previousElClass = currentEl.className;
-        currentEl.insertAdjacentElement('afterend',newElement);
-    };*/
     previousEl = currentEl;
     previousElClass = currentEl.className;
     currentEl.insertAdjacentElement('afterend',newElement);
@@ -506,7 +495,7 @@ ipcRenderer.on('switch-scripts', (e, args) => {
     //let prevScript = args.prevScript;
     let file = args.selectedScript;
     //content.style.display = 'inline-block';TODO: Uncomment this line after experimentation
-    document.getElementById('content').style.display = 'inline-block';
+    document.getElementById('content').style.display = 'block';
     selectedScripts += 1;
     document.getElementById('img-placeholder').style.display = 'none';
     //Reseting the values for a new file.
@@ -785,6 +774,10 @@ document.onselectionchange = () => {
     //currentElId = tempPreviousEl.id;
     //TODO: Only set the previousEl and insertElement function will do the rest
 };
+
+document.getElementById('page').addEventListener("overflow",()=>{
+    console.log('Page overflow');
+});
 
 //------------------------------------ Window related events --------------------------------------
 //Method that checks if main window is focused so that the global shortcuts dont intervene with other apps
