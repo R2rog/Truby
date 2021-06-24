@@ -218,7 +218,7 @@ button:hover{
 #title{
   flex: 2;
   text-align: right;
-  padding-right: 22%;  
+  padding-right: 9%;  
   overflow: hidden;
 }
 #title a{
@@ -392,6 +392,7 @@ button:hover{
   margin-top: 15%;
   cursor: pointer;
   background-color:#111;
+  cursor:default;
 }
 #toolbar div{
   text-align: center;

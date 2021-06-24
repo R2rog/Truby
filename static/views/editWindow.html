@@ -24,7 +24,7 @@
             //let newTitle = document.getElementById('title').value + '.json';
             let newTitle = document.getElementById('title').value;
             var format = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
-            if(format.test(newTitle)){
+            if(format.test(newTitle)||newTitle==''){
                 alert('Please introduce a valid name without special characters.')
                 return true;
             } else {

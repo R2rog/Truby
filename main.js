@@ -136,11 +136,9 @@ function saveDoc() {
             console.log('---------------------------------Saving script-----------------------------');
             try {
                 let selectedScript = store.get(scriptTitle);
-                console.log(selectedScript);
                 selectedScript.dialogs = content.dialogs;
                 selectedScript.fileDir = content.fileDir;
                 selectedScript.counter = content.counter;
-                console.log('Sript JSON being saved ...', selectedScript);
                 store.set(scriptTitle, selectedScript);
                 mainWindow.webContents.send('saved', 'File saved');
                 contentToSave = 0;

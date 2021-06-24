@@ -32,7 +32,7 @@ let shortcuts = [];
 let undoLog = [];
 let currentElId = 0;
 let changedFromInsertElement = 0;
-let noBreak = true;
+//let noBreak = true;
 
 //---------------------------------------- Asyn functions -------------------------------------------
 //Function that executes at the same time that the app launches
@@ -126,7 +126,7 @@ async function getTitles() {
     return true;
 };
 
-//Verifies the OS that the app is running on
+/*Verifies the OS that the app is running on
 async function checkProcess() {
     //ipcRenderer.send('check-process', 'Verifying the OS...');
     let toolbar = document.getElementById('toolbar');
@@ -164,7 +164,7 @@ async function checkProcess() {
         i = i+1;
     });
     return toolbar;
-};
+};*/
 
 //Menu handler using jQuery
 $(function() {
@@ -290,6 +290,7 @@ function newElement(type) {
 
 function insertElement(newElement,id,type) {
     content.focus();
+    if(document.activeElement.id == 'content'){
     //let currentEl = document.getElementById(currentElId);
     let selObj = window.getSelection();
     let range = new Range();//This section is the one that allows the cursor to get placed inside the new html element
@@ -302,6 +303,7 @@ function insertElement(newElement,id,type) {
     selObj.removeAllRanges();
     selObj.addRange(range);
     currentElId = newElement.id;
+    };
 };
 
 //Only used in the paste function to refresh the page
@@ -330,8 +332,8 @@ function noBreakFunc(){//Function that gives style to the script without the use
         el.setAttribute('class','transition');
     }else if(previousElClass == 'character'||previousElClass == 'parenthesis'){
         el.setAttribute('class','dialog');
-    }else if(countWords(text)<=2){
-        el.setAttribute('class','character'||text==text.toUpperCase());
+    }else if(countWords(text)<=2 || text==text.toUpperCase()){
+        el.setAttribute('class','character');
     }else{
         el.setAttribute('class','text');
     };
@@ -707,9 +709,19 @@ document.getElementById('content').addEventListener('click',e =>{
 document.getElementById('content').onkeypress = e =>{
     let keyCode = e.key;
     let currentEl = document.getElementById(currentElId);
-    let noBreak= document.getElementById('mode').checked;
+    //let noBreak= document.getElementById('mode').checked;
     if(currentEl == null)currentEl=previousEl;
-    if(keyCode=='Enter' && noBreak==true){
+    if(keyCode == 'Enter'){
+        e.preventDefault();
+        if(classes.includes(currentEl.className)){ //This bit prevents the app to parse an element that already has a class.
+            newElement('neutral');
+        }else{
+            noBreakFunc();
+            newElement('neutral');
+        };
+        unsavedChanges = 1;
+    };
+    /*if(keyCode=='Enter' && noBreak==true){
         e.preventDefault();
         if(classes.includes(currentEl.className)){ //This bit prevents the app to parse an element that already has a class.
             newElement('neutral');
@@ -724,7 +736,7 @@ document.getElementById('content').onkeypress = e =>{
         else if(currentEl.className == 'dialog') newElement('character');
         else newElement('text');
         unsavedChanges = 1;
-    };
+    };*/
 };
 
 //This section handles the enter event so it parses the file element correctly

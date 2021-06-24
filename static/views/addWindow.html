@@ -25,7 +25,7 @@
             let title = document.getElementById('title').value;
             var format = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
 
-            if(format.test(title)){
+            if(format.test(title) || newTitle==''){
                 alert('Please introduce a valid name')
                 return true;
             } else {
